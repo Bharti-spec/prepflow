@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrepFlow — Quiz Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:#FAFAFF;color:#0F172A}
+
+nav{background:#fff;border-bottom:1px solid #E2E8F0;padding:0 6%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-size:18px;font-weight:800;color:#0F172A;text-decoration:none;letter-spacing:-.4px}
+.logo span{color:#7C3AED}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{font-size:13px;font-weight:500;color:#64748B;text-decoration:none;transition:color .2s}
+.nav-links a:hover,.nav-links a.active{color:#7C3AED}
+.btn-sm{background:#7C3AED;color:#fff;padding:7px 18px;border-radius:7px;font-size:13px;font-weight:600;text-decoration:none}
+
+/* SCREENS */
+.screen{display:none;min-height:calc(100vh - 60px)}
+.screen.active{display:block}
+
+/* ── SETUP SCREEN ── */
+.setup-page{max-width:680px;margin:0 auto;padding:48px 24px}
+.setup-page h1{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.setup-page>p{font-size:15px;color:#64748B;margin-bottom:36px}
+
+.setup-card{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:24px;margin-bottom:16px}
+.setup-card h3{font-size:14px;font-weight:700;color:#0F172A;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.setup-card h3 span{font-size:16px}
+
+.exam-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.exam-opt{border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .2s;background:#fff}
+.exam-opt:hover{border-color:#DDD6FE;background:#F5F3FF}
+.exam-opt.sel{border-color:#7C3AED;background:#F5F3FF}
+.exam-opt .eo-icon{font-size:20px;margin-bottom:4px}
+.exam-opt .eo-name{font-size:12px;font-weight:700;color:#334155}
+.exam-opt.sel .eo-name{color:#6D28D9}
+
+.topic-grid{display:flex;gap:8px;flex-wrap:wrap}
+.topic-chip{border:1.5px solid #E2E8F0;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;background:#fff;transition:all .2s}
+.topic-chip:hover{border-color:#DDD6FE;background:#F5F3FF}
+.topic-chip.sel{border-color:#7C3AED;background:#F5F3FF;color:#6D28D9}
+
+.range-row{display:flex;align-items:center;gap:16px}
+.range-row input[type=range]{flex:1;accent-color:#7C3AED}
+.range-val{font-size:20px;font-weight:800;color:#7C3AED;min-width:48px;text-align:right}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.mode-opt{border:1.5px solid #E2E8F0;border-radius:10px;padding:14px;cursor:pointer;transition:all .2s;background:#fff}
+.mode-opt:hover{border-color:#DDD6FE}
+.mode-opt.sel{border-color:#7C3AED;background:#F5F3FF}
+.mode-opt .mo-icon{font-size:20px;margin-bottom:6px}
+.mode-opt .mo-name{font-size:13px;font-weight:700;color:#0F172A}
+.mode-opt .mo-sub{font-size:11px;color:#94A3B8;margin-top:2px}
+.mode-opt.sel .mo-name{color:#6D28D9}
+
+.start-btn{width:100%;padding:16px;background:#7C3AED;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s;margin-top:8px}
+.start-btn:hover{background:#6D28D9}
+
+/* ── QUIZ SCREEN ── */
+.quiz-wrap{max-width:780px;margin:0 auto;padding:24px}
+
+.quiz-topbar{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.q-progress-wrap{flex:1;height:8px;background:#E2E8F0;border-radius:100px;overflow:hidden;min-width:120px}
+.q-progress-bar{height:100%;background:#7C3AED;border-radius:100px;transition:width .4s ease}
+.q-count{font-size:13px;font-weight:600;color:#64748B;white-space:nowrap}
+.timer-box{display:flex;align-items:center;gap:6px;background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:6px 14px}
+.timer-box.danger{background:#FEE2E2;border-color:#FECACA}
+.timer-icon{font-size:14px}
+.timer-val{font-size:15px;font-weight:800;color:#92400E;font-variant-numeric:tabular-nums}
+.timer-box.danger .timer-val{color:#991B1B}
+.score-box{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:700;color:#6D28D9}
+
+.question-card{background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:28px;margin-bottom:16px}
+.q-meta{display:flex;gap:8px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.q-num{font-size:11px;font-weight:700;color:#94A3B8;letter-spacing:1px}
+.q-badge{font-size:11px;font-weight:700;padding:2px 10px;border-radius:100px}
+.badge-math{background:#EDE9FE;color:#6D28D9}
+.badge-eng{background:#F3E8FF;color:#7C3AED}
+.badge-gk{background:#DCFCE7;color:#15803D}
+.badge-rea{background:#FEF3C7;color:#92400E}
+.q-text{font-size:16px;font-weight:600;color:#0F172A;line-height:1.6;margin-bottom:24px}
+.options-grid{display:flex;flex-direction:column;gap:10px}
+.option{display:flex;align-items:center;gap:14px;padding:14px 18px;border:1.5px solid #E2E8F0;border-radius:10px;cursor:pointer;transition:all .2s;background:#fff}
+.option:hover:not(.disabled){border-color:#DDD6FE;background:#F5F3FF}
+.option.selected{border-color:#7C3AED;background:#F5F3FF}
+.option.correct{border-color:#16A34A;background:#F0FDF4}
+.option.wrong{border-color:#DC2626;background:#FEF2F2}
+.option.disabled{cursor:default}
+.opt-key{width:28px;height:28px;border-radius:50%;border:1.5px solid #E2E8F0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#64748B;flex-shrink:0;transition:all .2s}
+.option.selected .opt-key{background:#7C3AED;border-color:#7C3AED;color:#fff}
+.option.correct .opt-key{background:#16A34A;border-color:#16A34A;color:#fff}
+.option.wrong .opt-key{background:#DC2626;border-color:#DC2626;color:#fff}
+.opt-text{font-size:14px;font-weight:500;color:#334155;line-height:1.5}
+.option.correct .opt-text{color:#15803D;font-weight:600}
+.option.wrong .opt-text{color:#DC2626}
+
+.explanation-box{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:16px;margin-top:12px;display:none}
+.explanation-box.show{display:block}
+.exp-title{font-size:12px;font-weight:700;color:#15803D;margin-bottom:6px}
+.exp-text{font-size:13px;color:#166534;line-height:1.6}
+
+.quiz-actions{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.qa-left{display:flex;gap:8px}
+.btn-skip{padding:10px 20px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;font-weight:600;color:#64748B;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif;transition:all .2s}
+.btn-skip:hover{border-color:#CBD5E1}
+.btn-next{padding:10px 28px;background:#7C3AED;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.btn-next:hover{background:#6D28D9}
+.btn-next:disabled{background:#CBD5E1;cursor:not-allowed}
+.btn-note{padding:10px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;font-weight:600;color:#64748B;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif}
+
+/* NOTE MODAL */
+.note-modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;z-index:200;display:none}
+.note-modal.open{display:flex}
+.note-box{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:440px;margin:0 16px}
+.note-box h3{font-size:16px;font-weight:700;margin-bottom:14px}
+.note-textarea{width:100%;height:100px;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px;font-size:13px;font-family:'DM Sans',sans-serif;resize:none;outline:none;color:#334155}
+.note-textarea:focus{border-color:#C4B5FD}
+.note-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+.btn-cancel{padding:8px 18px;border:1.5px solid #E2E8F0;border-radius:7px;font-size:13px;font-weight:600;color:#64748B;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif}
+.btn-save{padding:8px 18px;background:#7C3AED;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ── RESULTS SCREEN ── */
+.results-page{max-width:680px;margin:0 auto;padding:48px 24px}
+.result-hero{background:#fff;border:1px solid #E2E8F0;border-radius:16px;padding:36px;text-align:center;margin-bottom:20px}
+.result-emoji{font-size:56px;margin-bottom:12px}
+.result-hero h2{font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.result-hero p{font-size:15px;color:#64748B}
+.score-circle{width:120px;height:120px;border-radius:50%;margin:24px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;border:6px solid #E2E8F0}
+.sc-num{font-size:30px;font-weight:800;color:#0F172A;letter-spacing:-1px}
+.sc-label{font-size:11px;color:#94A3B8;font-weight:600}
+.result-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.rs-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:16px;text-align:center}
+.rs-val{font-size:22px;font-weight:800;color:#0F172A}
+.rs-label{font-size:11px;color:#94A3B8;margin-top:3px}
+.rs-val.green{color:#16A34A}
+.rs-val.red{color:#DC2626}
+.rs-val.amber{color:#D97706}
+
+.weak-card{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:20px;margin-bottom:16px}
+.weak-card h3{font-size:14px;font-weight:700;color:#DC2626;margin-bottom:12px}
+.weak-tag{display:inline-block;background:#FEE2E2;border:1px solid #FECACA;border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;color:#DC2626;margin:3px}
+
+.result-actions{display:flex;gap:10px;flex-wrap:wrap}
+.btn-retry{flex:1;padding:14px;background:#7C3AED;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-mentor{flex:1;padding:14px;background:#fff;color:#7C3AED;border:1.5px solid #DDD6FE;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:flex;align-items:center;justify-content:center}
+
+@media(max-width:600px){
+  .exam-grid{grid-template-columns:repeat(2,1fr)}
+  .mode-grid{grid-template-columns:1fr}
+  .result-stats{grid-template-columns:1fr 1fr}
+  .nav-links a:not(.btn-sm){display:none}
+}
+</style>
+</head>
+<body>
+
+<nav style="background:rgba(255,255,255,0.95);border-bottom:1px solid #DDD6FE;padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)">
+  <a href="prepflow_v3.html" style="font-size:19px;font-weight:800;color:#0F172A;text-decoration:none;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
+    <div style="width:30px;height:30px;background:#7C3AED;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:800">P</div>
+    Prep<span style="color:#7C3AED">Flow</span>
+  </a>
+  <div style="display:flex;gap:20px;align-items:center">
+    <a href="prepflow_exams.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Exam Hub</a>
+    <a href="prepflow_calendar.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Calendar</a>
+    <a href="prepflow_pdfloader.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">PDF Loader</a>
+    <a href="prepflow_quiz.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Quiz</a>
+    <a href="prepflow_progress.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Progress</a>
+    <a href="prepflow_auth.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Login</a>
+    <a href="prepflow_chat.html" style="background:#7C3AED;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">AI Mentor →</a>
+  </div>
+</nav>
+
+<!-- SETUP SCREEN -->
+<div class="screen active" id="screen-setup">
+  <div class="setup-page">
+    <h1>🎯 Quiz Mode</h1>
+    <p>Previous year questions se practice karo — exam jaisa feel, real-time score, weak area analysis.</p>
+
+    <div class="setup-card">
+      <h3><span>📋</span> Exam Choose Karo</h3>
+      <div class="exam-grid">
+        <div class="exam-opt sel" onclick="toggleExam(this,'SSC CGL')"><div class="eo-icon">📋</div><div class="eo-name">SSC CGL</div></div>
+        <div class="exam-opt" onclick="toggleExam(this,'SSC CHSL')"><div class="eo-icon">📄</div><div class="eo-name">SSC CHSL</div></div>
+        <div class="exam-opt" onclick="toggleExam(this,'SSC MTS')"><div class="eo-icon">📝</div><div class="eo-name">SSC MTS</div></div>
+        <div class="exam-opt" onclick="toggleExam(this,'SSC GD')"><div class="eo-icon">🛡️</div><div class="eo-name">SSC GD</div></div>
+        <div class="exam-opt" onclick="toggleExam(this,'CDS')"><div class="eo-icon">⚔️</div><div class="eo-name">CDS</div></div>
+        <div class="exam-opt" onclick="toggleExam(this,'NDA')"><div class="eo-icon">🎖️</div><div class="eo-name">NDA</div></div>
+        <div class="exam-opt" onclick="toggleExam(this,'AFCAT')"><div class="eo-icon">✈️</div><div class="eo-name">AFCAT</div></div>
+        <div class="exam-opt" onclick="toggleExam(this,'Mixed')"><div class="eo-icon">🎲</div><div class="eo-name">Mixed</div></div>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <h3><span>📚</span> Topic Filter (Optional)</h3>
+      <div class="topic-grid" id="topicGrid">
+        <div class="topic-chip sel" onclick="this.classList.toggle('sel')">All Topics</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Mathematics</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Reasoning</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">English</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">General Awareness</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Current Affairs</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">History</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Geography</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Science</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Percentage & Profit</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Coding-Decoding</div>
+        <div class="topic-chip" onclick="this.classList.toggle('sel')">Trigonometry</div>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <h3><span>🔢</span> Questions Ki Sankhya</h3>
+      <div class="range-row">
+        <input type="range" min="5" max="50" value="15" step="5" oninput="document.getElementById('qVal').textContent=this.value;qCount=+this.value"/>
+        <div class="range-val" id="qVal">15</div>
+      </div>
+    </div>
+
+    <div class="setup-card">
+      <h3><span>⚙️</span> Mode Choose Karo</h3>
+      <div class="mode-grid">
+        <div class="mode-opt sel" onclick="selectMode(this,'practice')">
+          <div class="mo-icon">📖</div>
+          <div class="mo-name">Practice Mode</div>
+          <div class="mo-sub">Answer ke baad explanation milega</div>
+        </div>
+        <div class="mode-opt" onclick="selectMode(this,'timed')">
+          <div class="mo-icon">⏱️</div>
+          <div class="mo-name">Timed Mode</div>
+          <div class="mo-sub">Real exam jaisa — timer chalega</div>
+        </div>
+        <div class="mode-opt" onclick="selectMode(this,'weak')">
+          <div class="mo-icon">🎯</div>
+          <div class="mo-name">Weak Area Mode</div>
+          <div class="mo-sub">Sirf galat topics ke questions</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="start-btn" onclick="startQuiz()">🚀 Quiz Shuru Karo</button>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div class="screen" id="screen-quiz">
+  <div class="quiz-wrap">
+    <div class="quiz-topbar">
+      <div class="q-progress-wrap"><div class="q-progress-bar" id="qProgressBar"></div></div>
+      <div class="q-count" id="qCount">1 / 15</div>
+      <div class="timer-box" id="timerBox"><span class="timer-icon">⏱</span><span class="timer-val" id="timerVal">25:00</span></div>
+      <div class="score-box" id="scoreBox">Score: 0</div>
+    </div>
+
+    <div class="question-card">
+      <div class="q-meta">
+        <div class="q-num" id="qNum">QUESTION 1</div>
+        <div class="q-badge" id="qBadge">Mathematics</div>
+      </div>
+      <div class="q-text" id="qText">Loading question...</div>
+      <div class="options-grid" id="optionsGrid"></div>
+      <div class="explanation-box" id="expBox">
+        <div class="exp-title">💡 Explanation</div>
+        <div class="exp-text" id="expText"></div>
+      </div>
+    </div>
+
+    <div class="quiz-actions">
+      <div class="qa-left">
+        <button class="btn-skip" onclick="skipQuestion()">Skip →</button>
+        <button class="btn-note" onclick="openNote()">📌 Note</button>
+      </div>
+      <button class="btn-next" id="nextBtn" onclick="nextQuestion()" disabled>Agla Sawaal →</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div class="screen" id="screen-results">
+  <div class="results-page">
+    <div class="result-hero">
+      <div class="result-emoji" id="resultEmoji">🏆</div>
+      <h2 id="resultTitle">Quiz Complete!</h2>
+      <p id="resultSub">Tera performance analysis ready hai</p>
+      <div class="score-circle" id="scoreCircle">
+        <div class="sc-num" id="finalScore">0%</div>
+        <div class="sc-label">SCORE</div>
+      </div>
+    </div>
+
+    <div class="result-stats">
+      <div class="rs-card"><div class="rs-val green" id="rCorrect">0</div><div class="rs-label">Correct</div></div>
+      <div class="rs-card"><div class="rs-val red" id="rWrong">0</div><div class="rs-label">Wrong</div></div>
+      <div class="rs-card"><div class="rs-val amber" id="rSkipped">0</div><div class="rs-label">Skipped</div></div>
+      <div class="rs-card"><div class="rs-val" id="rAccuracy">0%</div><div class="rs-label">Accuracy</div></div>
+    </div>
+
+    <div class="weak-card" id="weakCard" style="display:none">
+      <h3>⚠️ Weak Areas — Inpe Focus Karo</h3>
+      <div id="weakTags"></div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-retry" onclick="resetQuiz()">🔄 Phir Se Karo</button>
+      <a class="btn-mentor" href="prepflow_chat.html">🤖 Mentor Se Pooch</a>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div class="note-modal" id="noteModal">
+  <div class="note-box">
+    <h3>📌 Is question pe note likho</h3>
+    <textarea class="note-textarea" id="noteText" placeholder="Yahan note likho — concept, doubt, shortcut..."></textarea>
+    <div class="note-actions">
+      <button class="btn-cancel" onclick="closeNote()">Cancel</button>
+      <button class="btn-save" onclick="saveNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── QUESTION BANK ──
+const QB = [
+  {q:"A train 180 km ki doori 60 km/h ki speed se cover karta hai. Kitna time lagega?",opts:["2 ghante","3 ghante","4 ghante","2.5 ghante"],ans:1,topic:"Mathematics",exp:"Distance ÷ Speed = Time → 180 ÷ 60 = 3 ghante"},
+  {q:"Agar 15% of x = 20% of y, toh x:y = ?",opts:["3:4","4:3","2:3","3:2"],ans:1,topic:"Mathematics",exp:"15x = 20y → x/y = 20/15 = 4:3"},
+  {q:"COMPUTER ka code RFUVQNPC hai toh MEDICINE ka code kya hoga?",opts:["EOJDJEFM","MFEJDJOF","NFEJDJOF","EOJDJOFM"],ans:2,topic:"Reasoning",exp:"Har letter ka reverse position use hota hai — Z→A, A→Z pattern"},
+  {q:"Agar A, B ka bhai hai, B, C ki behen hai, aur C, D ka baap hai — toh A ka D se kya rishta hai?",opts:["Uncle","Nephew","Father","Brother"],ans:0,topic:"Reasoning",exp:"A→B (brother-sister), B→C (sister), C→D (father). A is uncle of D."},
+  {q:"'BREAD' ka sahi spelling error kaunsa hai? 'BRAED', 'BARED', 'BREAD', 'BREDA'",opts:["BRAED","BARED","BREAD","BREDA"],ans:2,topic:"English",exp:"BREAD correct spelling hai. Baaki sab wrong order mein hain."},
+  {q:"India ka pehla Governor General kaun tha?",opts:["Lord Mountbatten","Warren Hastings","Lord Canning","Lord Dalhousie"],ans:1,topic:"General Awareness",exp:"Warren Hastings 1773-1785 India ka pehla Governor General tha."},
+  {q:"Sin 30° + Cos 60° = ?",opts:["0","1","0.5","1.5"],ans:1,topic:"Mathematics",exp:"Sin 30° = 0.5, Cos 60° = 0.5. 0.5 + 0.5 = 1"},
+  {q:"Chandragupta Maurya ne Maurya Samrajya kab sthaapit kiya?",opts:["321 BC","305 BC","273 BC","232 BC"],ans:0,topic:"General Awareness",exp:"Chandragupta Maurya ne 321 BC mein Maurya Samrajya ki sthaapit kiya."},
+  {q:"Choose the correct sentence:",opts:["He don't know","He doesn't knows","He doesn't know","He not know"],ans:2,topic:"English",exp:"'He' ke saath 'doesn't' aur base form 'know' use hota hai."},
+  {q:"Ek aadmi ne ek cheez 20% profit pe becha. Agar CP ₹500 tha, toh SP kya tha?",opts:["₹550","₹580","₹600","₹620"],ans:2,topic:"Mathematics",exp:"SP = CP × (1 + profit%) = 500 × 1.20 = ₹600"},
+  {q:"India mein Rajya Sabha ke sadasyon ki maximum sankhya kitni hai?",opts:["200","238","250","245"],ans:2,topic:"General Awareness",exp:"Article 80 ke anusaar Rajya Sabha mein maximum 250 seats hain — 238 elected + 12 nominated."},
+  {q:"'MANGO' ko code mein 'OCPIQ' likha jaata hai, toh 'APPLE' ka code kya hoga?",opts:["CRRNG","CQQNG","CRQNG","DRRNG"],ans:0,topic:"Reasoning",exp:"Har letter mein +2 add hota hai. A→C, P→R, P→R, L→N, E→G = CRRANG"},
+  {q:"Nile River kahan hai?",opts:["Asia","Africa","Europe","South America"],ans:1,topic:"General Awareness",exp:"Nile River duniya ki sabse lambi nadi hai jo Africa mein behti hai."},
+  {q:"Choose the odd one out: Dog, Cat, Eagle, Horse",opts:["Dog","Cat","Eagle","Horse"],ans:2,topic:"Reasoning",exp:"Eagle ek bird hai, baaki teen mammals hain."},
+  {q:"₹1200 ka 15% kitna hoga?",opts:["₹160","₹170","₹180","₹190"],ans:2,topic:"Mathematics",exp:"1200 × 15/100 = 1200 × 0.15 = ₹180"},
+];
+
+// ── STATE ──
+let questions=[], cur=0, score=0, correct=0, wrong=0, skipped=0;
+let qCount=15, selectedExam='SSC CGL', quizMode='practice';
+let timer=null, timeLeft=0, answered=false;
+const weakTopics={};
+const notes={};
+
+function toggleExam(el,name){
+  document.querySelectorAll('.exam-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel'); selectedExam=name;
+}
+function selectMode(el,mode){
+  document.querySelectorAll('.mode-opt').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel'); quizMode=mode;
+}
+
+function startQuiz(){
+  questions=[];
+  const pool=[...QB];
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  questions=pool.slice(0,Math.min(qCount,pool.length));
+  cur=0; score=0; correct=0; wrong=0; skipped=0;
+  showScreen('quiz');
+  loadQuestion();
+  if(quizMode==='timed'){timeLeft=questions.length*36;startTimer();}
+  else{document.getElementById('timerBox').style.display='none';}
+}
+
+function loadQuestion(){
+  if(cur>=questions.length){endQuiz();return;}
+  answered=false;
+  const q=questions[cur];
+  document.getElementById('qNum').textContent='QUESTION '+(cur+1);
+  document.getElementById('qCount').textContent=(cur+1)+' / '+questions.length;
+  document.getElementById('qProgressBar').style.width=((cur/questions.length)*100)+'%';
+  document.getElementById('qBadge').textContent=q.topic;
+  const badges={Mathematics:'badge-math',English:'badge-eng','General Awareness':'badge-gk',Reasoning:'badge-rea'};
+  document.getElementById('qBadge').className='q-badge '+(badges[q.topic]||'badge-gk');
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('expBox').classList.remove('show');
+  document.getElementById('nextBtn').disabled=true;
+  const grid=document.getElementById('optionsGrid');
+  grid.innerHTML='';
+  q.opts.forEach((opt,i)=>{
+    const div=document.createElement('div');
+    div.className='option';
+    div.innerHTML=`<div class="opt-key">${['A','B','C','D'][i]}</div><div class="opt-text">${opt}</div>`;
+    div.onclick=()=>selectAnswer(i,div);
+    grid.appendChild(div);
+  });
+  document.getElementById('scoreBox').textContent='Score: '+score;
+}
+
+function selectAnswer(idx,el){
+  if(answered)return;
+  answered=true;
+  const q=questions[cur];
+  const opts=document.querySelectorAll('.option');
+  opts.forEach(o=>o.classList.add('disabled'));
+  if(idx===q.ans){
+    el.classList.add('correct');
+    correct++; score+=4;
+    if(quizMode!=='timed') showExp(q.exp,'correct');
+  } else {
+    el.classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    wrong++; score-=1;
+    weakTopics[q.topic]=(weakTopics[q.topic]||0)+1;
+    if(quizMode!=='timed') showExp(q.exp,'wrong');
+  }
+  document.getElementById('nextBtn').disabled=false;
+  document.getElementById('scoreBox').textContent='Score: '+score;
+}
+
+function showExp(text,type){
+  const box=document.getElementById('expBox');
+  box.className='explanation-box show';
+  box.style.background=type==='correct'?'#F0FDF4':'#FEF2F2';
+  box.style.borderColor=type==='correct'?'#BBF7D0':'#FECACA';
+  document.querySelector('.exp-title').style.color=type==='correct'?'#15803D':'#DC2626';
+  document.querySelector('.exp-title').textContent=type==='correct'?'✅ Sahi Jawab!':'❌ Galat Jawab';
+  document.getElementById('expText').textContent=text;
+  document.getElementById('expText').style.color=type==='correct'?'#166534':'#991B1B';
+}
+
+function skipQuestion(){skipped++;cur++;loadQuestion();}
+function nextQuestion(){cur++;loadQuestion();}
+
+function startTimer(){
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    timeLeft--;
+    const m=Math.floor(timeLeft/60), s=timeLeft%60;
+    document.getElementById('timerVal').textContent=m+':'+(s<10?'0':'')+s;
+    if(timeLeft<=60)document.getElementById('timerBox').classList.add('danger');
+    if(timeLeft<=0){clearInterval(timer);endQuiz();}
+  },1000);
+  const m=Math.floor(timeLeft/60),s=timeLeft%60;
+  document.getElementById('timerVal').textContent=m+':'+(s<10?'0':'')+s;
+}
+
+function endQuiz(){
+  clearInterval(timer);
+  showScreen('results');
+  const total=questions.length;
+  const pct=Math.round((correct/total)*100);
+  document.getElementById('finalScore').textContent=pct+'%';
+  document.getElementById('rCorrect').textContent=correct;
+  document.getElementById('rWrong').textContent=wrong;
+  document.getElementById('rSkipped').textContent=skipped;
+  document.getElementById('rAccuracy').textContent=Math.round((correct/(correct+wrong||1))*100)+'%';
+  const circle=document.getElementById('scoreCircle');
+  circle.style.borderColor=pct>=70?'#16A34A':pct>=40?'#D97706':'#DC2626';
+  document.getElementById('resultEmoji').textContent=pct>=80?'🏆':pct>=60?'👍':pct>=40?'📚':'💪';
+  document.getElementById('resultTitle').textContent=pct>=80?'Zabardast!':pct>=60?'Accha Kiya!':pct>=40?'Practice Karte Raho!':'Mehnat Ki Zaroorat Hai!';
+  document.getElementById('resultSub').textContent=`${correct}/${total} sahi · ${selectedExam} · ${quizMode} mode`;
+  const wk=Object.entries(weakTopics).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(wk.length){
+    document.getElementById('weakCard').style.display='block';
+    document.getElementById('weakTags').innerHTML=wk.map(([t])=>`<span class="weak-tag">${t}</span>`).join('');
+  }
+}
+
+function resetQuiz(){
+  Object.keys(weakTopics).forEach(k=>delete weakTopics[k]);
+  showScreen('setup');
+}
+
+function openNote(){document.getElementById('noteModal').classList.add('open');}
+function closeNote(){document.getElementById('noteModal').classList.remove('open');}
+function saveNote(){
+  const t=document.getElementById('noteText').value.trim();
+  if(t) notes[cur]=t;
+  closeNote();
+}
+
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

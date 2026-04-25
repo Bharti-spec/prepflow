@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/chat", "dest": "/prepflow_chat.html" },
+    { "src": "/quiz", "dest": "/prepflow_quiz.html" },
+    { "src": "/exams", "dest": "/prepflow_exams.html" },
+    { "src": "/progress", "dest": "/prepflow_progress.html" },
+    { "src": "/calendar", "dest": "/prepflow_calendar.html" },
+    { "src": "/pdf", "dest": "/prepflow_pdfloader.html" },
+    { "src": "/login", "dest": "/prepflow_auth.html" }
+  ]
+}

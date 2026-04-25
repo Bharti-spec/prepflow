@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrepFlow — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--brand:#7C3AED;--brand-dark:#6D28D9;--brand-light:#8B5CF6;--brand-dim:rgba(124,58,237,0.08);--brand-border:rgba(124,58,237,0.2);--bg:#FAFAFF;--surface:#fff;--border:#E5E7EB;--border2:#DDD6FE;--text:#0F172A;--text2:#4B5563;--text3:#9CA3AF}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+
+nav{background:rgba(255,255,255,0.95);border-bottom:1px solid var(--border2);padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(16px)}
+.logo{font-size:20px;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.logo-mark{width:30px;height:30px;background:var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:800}
+.logo span{color:var(--brand)}
+
+.auth-wrap{min-height:calc(100vh - 62px);display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative;overflow:hidden}
+.auth-wrap::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:600px;background:radial-gradient(ellipse,rgba(124,58,237,0.08) 0%,transparent 70%);pointer-events:none}
+
+.auth-card{background:#fff;border:1px solid var(--border2);border-radius:20px;padding:44px 40px;width:100%;max-width:420px;box-shadow:0 8px 40px rgba(124,58,237,0.10);position:relative;z-index:1}
+
+/* TABS */
+.auth-tabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:32px}
+.auth-tab{flex:1;padding:9px;border-radius:8px;border:none;background:transparent;font-size:14px;font-weight:600;color:var(--text3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.auth-tab.active{background:#fff;color:var(--brand);box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+
+.auth-icon{text-align:center;margin-bottom:20px;font-size:36px}
+.auth-title{font-size:22px;font-weight:800;letter-spacing:-.5px;text-align:center;margin-bottom:6px}
+.auth-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.6;margin-bottom:28px}
+
+/* GOOGLE BTN */
+.google-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:12px;padding:13px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:15px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;margin-bottom:20px}
+.google-btn:hover{border-color:var(--brand-border);background:var(--brand-dim);color:var(--brand)}
+.google-icon{width:20px;height:20px}
+
+.divider{display:flex;align-items:center;gap:12px;color:var(--text3);font-size:12px;font-weight:500;margin-bottom:20px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* FORM */
+.form-group{margin-bottom:16px}
+.form-label{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px;display:block}
+.form-input{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;transition:border .2s;background:#fff}
+.form-input:focus{border-color:#A78BFA}
+.form-input::placeholder{color:var(--text3)}
+
+.forgot{font-size:12px;color:var(--brand);text-decoration:none;font-weight:500;display:block;text-align:right;margin-top:-10px;margin-bottom:16px}
+
+.submit-btn{width:100%;padding:13px;background:var(--brand);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;margin-bottom:12px}
+.submit-btn:hover{background:var(--brand-dark);transform:translateY(-1px)}
+.submit-btn:active{transform:translateY(0)}
+
+.auth-note{font-size:12px;color:var(--text3);text-align:center;line-height:1.6}
+.auth-note a{color:var(--brand);font-weight:600;text-decoration:none}
+
+/* BENEFITS */
+.benefits{display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.benefit{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text2)}
+.benefit-icon{width:28px;height:28px;border-radius:8px;background:var(--brand-dim);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+/* SUCCESS STATE */
+.success-screen{display:none;text-align:center;padding:20px 0}
+.success-screen.show{display:block}
+.success-icon{font-size:52px;margin-bottom:16px}
+.success-screen h2{font-size:22px;font-weight:800;margin-bottom:8px}
+.success-screen p{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+.go-btn{display:inline-block;background:var(--brand);color:#fff;padding:12px 32px;border-radius:10px;font-size:15px;font-weight:700;text-decoration:none;transition:background .2s}
+.go-btn:hover{background:var(--brand-dark)}
+
+.form-screen{}
+
+/* FEATURES STRIP */
+.features-strip{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.fs-item{font-size:11px;font-weight:600;color:var(--text3);display:flex;align-items:center;gap:4px}
+.fs-dot{width:4px;height:4px;background:var(--brand);border-radius:50%}
+
+@media(max-width:480px){.auth-card{padding:32px 24px}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="prepflow_v3.html">
+    <div class="logo-mark">P</div>
+    Prep<span>Flow</span>
+  </a>
+  <a href="prepflow_v3.html" style="font-size:13px;color:#9CA3AF;text-decoration:none;font-weight:500">← Back to Home</a>
+</nav>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <!-- TABS -->
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="showTab('login',this)">Login</button>
+      <button class="auth-tab" onclick="showTab('register',this)">Register</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="form-screen" id="loginScreen">
+      <div class="auth-icon">👋</div>
+      <div class="auth-title">Wapas Aaye!</div>
+      <div class="auth-sub">Apni preparation track karo aur AI mentor se guidance lo.</div>
+
+      <button class="google-btn" onclick="googleLogin()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="divider">ya email se login karo</div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="apna@email.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="loginPass" placeholder="Password daalo"/>
+      </div>
+      <a href="#" class="forgot">Password bhool gaye?</a>
+
+      <button class="submit-btn" onclick="emailLogin()">Login Karo →</button>
+      <div class="auth-note">Account nahi hai? <a href="#" onclick="showTab('register',document.querySelectorAll('.auth-tab')[1])">Register karo</a></div>
+
+      <div class="features-strip">
+        <span class="fs-item"><span class="fs-dot"></span>Progress Save</span>
+        <span class="fs-item"><span class="fs-dot"></span>AI Mentor</span>
+        <span class="fs-item"><span class="fs-dot"></span>Quiz History</span>
+        <span class="fs-item"><span class="fs-dot"></span>Free Forever</span>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="form-screen" id="registerScreen" style="display:none">
+      <div class="auth-icon">🚀</div>
+      <div class="auth-title">Free Mein Join Karo!</div>
+      <div class="auth-sub">Ek account se sab features unlock — progress, quiz history, AI mentor sab.</div>
+
+      <div class="benefits">
+        <div class="benefit"><div class="benefit-icon">📈</div>Progress automatically save hoga</div>
+        <div class="benefit"><div class="benefit-icon">🤖</div>AI Mentor unlimited access</div>
+        <div class="benefit"><div class="benefit-icon">🎯</div>Quiz history aur weak area analysis</div>
+        <div class="benefit"><div class="benefit-icon">🔔</div>Exam notification alerts</div>
+      </div>
+
+      <button class="google-btn" onclick="googleLogin()">
+        <svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Sign up with Google — 1 Click
+      </button>
+
+      <div class="divider">ya email se register karo</div>
+
+      <div class="form-group">
+        <label class="form-label">Full Name</label>
+        <input class="form-input" type="text" id="regName" placeholder="Apna naam likho"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" id="regEmail" placeholder="apna@email.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" id="regPass" placeholder="Strong password banao"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Target Exam</label>
+        <select class="form-input" id="regExam">
+          <option>SSC CGL</option><option>SSC CHSL</option><option>SSC MTS</option>
+          <option>SSC GD</option><option>CDS</option><option>NDA</option><option>AFCAT</option>
+        </select>
+      </div>
+
+      <button class="submit-btn" onclick="emailRegister()">Account Banao — Free →</button>
+      <div class="auth-note">Already account hai? <a href="#" onclick="showTab('login',document.querySelectorAll('.auth-tab')[0])">Login karo</a></div>
+      <div class="auth-note" style="margin-top:8px">Register karke tum <a href="#">Terms</a> aur <a href="#">Privacy Policy</a> se agree karte ho.</div>
+    </div>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">🎉</div>
+      <h2 id="successTitle">Welcome to PrepFlow!</h2>
+      <p id="successMsg">Tera account ban gaya. Ab AI mentor se baat karo, quiz do, progress track karo — sab free mein!</p>
+      <a href="prepflow_chat.html" class="go-btn">AI Mentor Se Baat Karo →</a>
+      <div style="margin-top:12px"><a href="prepflow_exams.html" style="font-size:13px;color:#7C3AED;text-decoration:none;font-weight:600">Exam Hub dekhna hai →</a></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tab, el){
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginScreen').style.display = tab==='login'?'block':'none';
+  document.getElementById('registerScreen').style.display = tab==='register'?'block':'none';
+  document.getElementById('successScreen').classList.remove('show');
+}
+
+function googleLogin(){
+  // Simulate Google OAuth (in production: use Firebase/Supabase Google OAuth)
+  const names=['Rahul Sharma','Priya Singh','Amit Kumar','Sneha Patel','Rohan Verma'];
+  const name=names[Math.floor(Math.random()*names.length)];
+  const user={name,email:name.toLowerCase().replace(' ','.')+Math.floor(Math.random()*99)+'@gmail.com',photo:'G',loginType:'google',loggedIn:true,joinDate:'April 2026'};
+  localStorage.setItem('pf_user',JSON.stringify(user));
+  showSuccess(name,'Google');
+}
+
+function emailLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass){alert('Email aur password dono daalo!');return;}
+  const saved=JSON.parse(localStorage.getItem('pf_users')||'{}');
+  if(!saved[email]){alert('Account nahi mila. Pehle register karo!');return;}
+  if(saved[email].pass!==pass){alert('Password galat hai!');return;}
+  const user={...saved[email],loggedIn:true};
+  localStorage.setItem('pf_user',JSON.stringify(user));
+  showSuccess(saved[email].name,'email');
+}
+
+function emailRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const pass=document.getElementById('regPass').value;
+  const exam=document.getElementById('regExam').value;
+  if(!name||!email||!pass){alert('Saari fields bharo!');return;}
+  if(pass.length<6){alert('Password kam se kam 6 characters ka hona chahiye!');return;}
+  const users=JSON.parse(localStorage.getItem('pf_users')||'{}');
+  if(users[email]){alert('Is email se already account hai! Login karo.');return;}
+  users[email]={name,email,pass,exam,joinDate:'April 2026'};
+  localStorage.setItem('pf_users',JSON.stringify(users));
+  const user={name,email,exam,loggedIn:true,joinDate:'April 2026'};
+  localStorage.setItem('pf_user',JSON.stringify(user));
+  showSuccess(name,'register');
+}
+
+function showSuccess(name,type){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('registerScreen').style.display='none';
+  document.getElementById('successScreen').classList.add('show');
+  if(type==='register'){
+    document.getElementById('successTitle').textContent='Welcome, '+name.split(' ')[0]+'! 🎉';
+    document.getElementById('successMsg').textContent='Tera account ban gaya. Ab AI mentor se baat karo, quiz do, progress track karo — sab free mein!';
+  } else {
+    document.getElementById('successTitle').textContent='Wapas Aaye, '+name.split(' ')[0]+'! 👋';
+    document.getElementById('successMsg').textContent='Teri progress save hai. Chalo wahan se shuru karte hain jahan chhoda tha!';
+  }
+}
+
+// Auto-login check
+const u=JSON.parse(localStorage.getItem('pf_user')||'null');
+if(u?.loggedIn) showSuccess(u.name,'returning');
+</script>
+</body>
+</html>

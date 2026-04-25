@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrepFlow — AI Exam Mentor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:#fff;color:#0F172A;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 7%;background:rgba(255,255,255,0.92);backdrop-filter:blur(16px);border-bottom:1px solid #E2E8F0}
+.logo{font-size:20px;font-weight:800;color:#0F172A;text-decoration:none;letter-spacing:-0.5px}
+.logo span{color:#7C3AED}
+.nav-links{display:flex;gap:32px;list-style:none}
+.nav-links a{font-size:14px;font-weight:500;color:#64748B;text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:#0F172A}
+.btn-nav{background:#7C3AED;color:#fff;padding:9px 22px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;transition:background .2s}
+.btn-nav:hover{background:#6D28D9}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 7% 60px;text-align:center;position:relative;background:#fff}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,#F5F3FF 0%,transparent 70%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:7px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:100px;padding:6px 16px;margin-bottom:28px;font-size:13px;font-weight:600;color:#7C3AED;position:relative;z-index:1;animation:up .6s ease both}
+.badge-dot{width:7px;height:7px;background:#22C55E;border-radius:50%;animation:ping 2s infinite}
+@keyframes ping{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{opacity:.8;box-shadow:0 0 0 5px rgba(34,197,94,0)}}
+h1{font-size:clamp(40px,6.5vw,80px);font-weight:800;line-height:1.05;letter-spacing:-2.5px;color:#0F172A;margin-bottom:22px;position:relative;z-index:1;animation:up .6s .08s ease both}
+h1 .blue{color:#7C3AED}
+.hero-p{font-size:clamp(16px,1.8vw,19px);color:#64748B;max-width:540px;line-height:1.75;margin-bottom:36px;position:relative;z-index:1;animation:up .6s .16s ease both}
+.hero-p strong{color:#0F172A;font-weight:600}
+.btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1;animation:up .6s .24s ease both}
+.btn-primary{background:#7C3AED;color:#fff;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:700;text-decoration:none;transition:all .2s;box-shadow:0 4px 14px rgba(124,58,237,.25)}
+.btn-primary:hover{background:#6D28D9;transform:translateY(-2px);box-shadow:0 8px 22px rgba(124,58,237,.35)}
+.btn-outline{background:#fff;color:#0F172A;padding:14px 32px;border-radius:10px;font-size:16px;font-weight:600;text-decoration:none;border:1.5px solid #E2E8F0;transition:all .2s}
+.btn-outline:hover{border-color:#CBD5E1;transform:translateY(-2px)}
+.pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:48px;position:relative;z-index:1;animation:up .6s .32s ease both}
+.pill{padding:7px 16px;border-radius:100px;font-size:13px;font-weight:600;border:1.5px solid}
+.pill-ssc{background:#F5F3FF;border-color:#DDD6FE;color:#6D28D9}
+.pill-def{background:#F0FDF4;border-color:#BBF7D0;color:#15803D}
+
+/* STATS */
+.stats{display:flex;justify-content:center;gap:56px;flex-wrap:wrap;padding:36px 7%;border-top:1px solid #F1F5F9;border-bottom:1px solid #F1F5F9}
+.stat-n{font-size:34px;font-weight:800;color:#0F172A;letter-spacing:-1px}
+.stat-n span{color:#7C3AED}
+.stat-l{font-size:13px;color:#94A3B8;margin-top:3px}
+
+/* MARQUEE */
+.mq-wrap{overflow:hidden;background:#FAFAFF;border-top:1px solid #E2E8F0;border-bottom:1px solid #E2E8F0;padding:12px 0}
+.mq{display:flex;width:max-content;animation:mq 25s linear infinite}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mq-item{display:flex;align-items:center;gap:8px;padding:0 28px;border-right:1px solid #E2E8F0;font-size:13px;font-weight:600;color:#94A3B8;white-space:nowrap}
+.mq-item .d{width:5px;height:5px;border-radius:50%;background:#7C3AED}
+
+/* SECTIONS */
+.sec{padding:96px 7%}
+.sec-alt{background:#FAFAFF}
+.tag{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#7C3AED;margin-bottom:12px}
+.sec-h{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-1.5px;color:#0F172A;line-height:1.08;margin-bottom:16px}
+.sec-p{font-size:16px;color:#64748B;line-height:1.75;max-width:460px}
+
+/* HOW */
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:72px;align-items:center;margin-top:56px}
+.step{display:flex;gap:20px;padding:24px 0;border-bottom:1px solid #F1F5F9}
+.step:last-child{border-bottom:none}
+.step-n{font-size:12px;font-weight:700;color:#CBD5E1;min-width:24px;padding-top:2px}
+.step h3{font-size:18px;font-weight:700;color:#0F172A;margin-bottom:6px;letter-spacing:-.3px}
+.step p{font-size:14px;color:#64748B;line-height:1.65}
+
+/* CHAT CARD */
+.chat-card{background:#fff;border:1px solid #E2E8F0;border-radius:16px;overflow:hidden;box-shadow:0 20px 60px rgba(15,23,42,.08)}
+.chat-bar{background:#FAFAFF;border-bottom:1px solid #E2E8F0;padding:13px 18px;display:flex;align-items:center;gap:10px}
+.chat-av{width:34px;height:34px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff}
+.chat-bar h4{font-size:13px;font-weight:700;color:#0F172A}
+.chat-bar p{font-size:11px;color:#22C55E;font-weight:600}
+.chat-msgs{padding:18px;display:flex;flex-direction:column;gap:10px}
+.cm{max-width:82%;padding:11px 14px;font-size:13px;line-height:1.6;border-radius:12px}
+.cm.ai{background:#FAFAFF;color:#334155;border:1px solid #E2E8F0;border-radius:4px 12px 12px 12px}
+.cm.user{background:#7C3AED;color:#fff;align-self:flex-end;border-radius:12px 4px 12px 12px}
+.cm strong{font-weight:700}
+.chat-in{padding:13px 18px;border-top:1px solid #E2E8F0;display:flex;gap:8px}
+.ci{flex:1;background:#FAFAFF;border:1px solid #E2E8F0;border-radius:8px;padding:9px 14px;font-size:12px;color:#94A3B8;font-family:'DM Sans',sans-serif}
+.cs{width:34px;height:34px;background:#7C3AED;border-radius:8px;display:flex;align-items:center;justify-content:center}
+
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#DDD6FE;border:1px solid #E2E8F0;border-radius:16px;overflow:hidden;margin-top:56px}
+.fc{background:#fff;padding:32px 28px;transition:background .2s}
+.fc:hover{background:#FAFAFF}
+.fi{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:16px}
+.fi-b{background:#F5F3FF}
+.fi-g{background:#F0FDF4}
+.fc h3{font-size:16px;font-weight:700;color:#0F172A;margin-bottom:8px;letter-spacing:-.3px}
+.fc p{font-size:13px;color:#64748B;line-height:1.6}
+
+/* EXAMS */
+.ex-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:48px}
+.ex-card{background:#fff;border:1.5px solid #E2E8F0;border-radius:14px;padding:26px;transition:all .2s}
+.ex-card:hover{border-color:#DDD6FE;transform:translateY(-3px);box-shadow:0 12px 32px rgba(124,58,237,.08)}
+.ex-lbl{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.lb-ssc{color:#7C3AED}
+.lb-def{color:#15803D}
+.ex-card h3{font-size:20px;font-weight:800;color:#0F172A;margin-bottom:14px;letter-spacing:-.5px}
+.tags{display:flex;gap:7px;flex-wrap:wrap}
+.t{background:#FAFAFF;border:1px solid #E2E8F0;border-radius:6px;padding:4px 11px;font-size:12px;font-weight:600;color:#475569}
+
+/* STACK */
+.stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#E2E8F0;border:1px solid #E2E8F0;border-radius:14px;overflow:hidden;margin-top:48px}
+.sc{background:#fff;padding:26px 20px;text-align:center}
+.sc-logo{font-size:26px;margin-bottom:10px}
+.sc h4{font-size:14px;font-weight:700;color:#0F172A;margin-bottom:3px}
+.sc p{font-size:12px;color:#94A3B8}
+.free-pill{display:inline-block;background:#F0FDF4;color:#15803D;font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 9px;border-radius:100px;margin-top:8px}
+
+/* CTA */
+.cta-sec{padding:100px 7%;background:#fff}
+.cta-box{max-width:640px;margin:0 auto;text-align:center;background:#F5F3FF;border:1.5px solid #DDD6FE;border-radius:24px;padding:64px 48px}
+.cta-box h2{font-size:clamp(28px,4vw,44px);font-weight:800;letter-spacing:-1.5px;color:#0F172A;margin-bottom:14px;line-height:1.1}
+.cta-box p{font-size:16px;color:#475569;margin-bottom:32px;line-height:1.7}
+.cta-note{font-size:13px;color:#94A3B8;margin-top:14px}
+.cta-note strong{color:#22C55E}
+
+/* FOOTER */
+footer{border-top:1px solid #F1F5F9;padding:28px 7%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.fl{font-size:17px;font-weight:800;color:#0F172A;letter-spacing:-.5px}
+.fl span{color:#7C3AED}
+footer p{font-size:13px;color:#94A3B8}
+.flinks{display:flex;gap:20px}
+.flinks a{font-size:13px;color:#94A3B8;text-decoration:none;transition:color .2s}
+.flinks a:hover{color:#0F172A}
+
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.rv{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+.rv.in{opacity:1;transform:none}
+
+@media(max-width:900px){
+  .how-grid{grid-template-columns:1fr}
+  .feat-grid{grid-template-columns:1fr}
+  .ex-grid{grid-template-columns:1fr}
+  .stack-grid{grid-template-columns:1fr 1fr}
+  .nav-links{display:none}
+  .cta-box{padding:44px 28px}
+}
+@media(max-width:580px){
+  .stats{gap:28px}
+  .stack-grid{grid-template-columns:1fr}
+  .btns{flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body>
+
+<nav style="background:rgba(255,255,255,0.95);border-bottom:1px solid #DDD6FE;padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)">
+  <a href="prepflow_v3.html" style="font-size:19px;font-weight:800;color:#0F172A;text-decoration:none;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
+    <div style="width:30px;height:30px;background:#7C3AED;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:800">P</div>
+    Prep<span style="color:#7C3AED">Flow</span>
+  </a>
+  <div style="display:flex;gap:20px;align-items:center">
+    <a href="prepflow_exams.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Exam Hub</a>
+    <a href="prepflow_calendar.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Calendar</a>
+    <a href="prepflow_pdfloader.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">PDF Loader</a>
+    <a href="prepflow_quiz.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Quiz</a>
+    <a href="prepflow_progress.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Progress</a>
+    <a href="prepflow_auth.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Login</a>
+    <a href="prepflow_chat.html" style="background:#7C3AED;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">AI Mentor →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="badge"><span class="badge-dot"></span>AI Mentor — Bilkul Free</div>
+  <h1>Crack <span class="blue">SSC & Defence</span><br/>with AI Mentor</h1>
+  <p class="hero-p">Previous year papers analyze karo, <strong>Hinglish mein pooch</strong>, aur apni preparation smart banao — <strong>₹0 mein, hamesha.</strong></p>
+  <div class="btns">
+    <a href="#start" class="btn-primary">Start Preparing Free →</a>
+    <a href="#how" class="btn-outline">How It Works</a>
+  </div>
+  <div class="pills">
+    <span class="pill pill-ssc">SSC CGL</span>
+    <span class="pill pill-ssc">SSC CHSL</span>
+    <span class="pill pill-ssc">SSC MTS</span>
+    <span class="pill pill-ssc">SSC GD</span>
+    <span class="pill pill-def">⚔ CDS</span>
+    <span class="pill pill-def">⚔ NDA</span>
+    <span class="pill pill-def">✈ AFCAT</span>
+  </div>
+</section>
+
+<div class="stats">
+  <div class="rv"><div class="stat-n">10<span>K+</span></div><div class="stat-l">Previous Year Questions</div></div>
+  <div class="rv"><div class="stat-n">7</div><div class="stat-l">Exams Covered</div></div>
+  <div class="rv"><div class="stat-n">24<span>/7</span></div><div class="stat-l">AI Mentor Available</div></div>
+  <div class="rv"><div class="stat-n">₹<span>0</span></div><div class="stat-l">Forever Free</div></div>
+</div>
+
+<div class="mq-wrap">
+  <div class="mq">
+    <div class="mq-item"><span class="d"></span>SSC CGL</div><div class="mq-item"><span class="d"></span>Previous Year Papers</div>
+    <div class="mq-item"><span class="d"></span>NDA Written</div><div class="mq-item"><span class="d"></span>AI Pattern Analysis</div>
+    <div class="mq-item"><span class="d"></span>CDS Exam</div><div class="mq-item"><span class="d"></span>Hinglish Mentor</div>
+    <div class="mq-item"><span class="d"></span>AFCAT</div><div class="mq-item"><span class="d"></span>Free Study Plans</div>
+    <div class="mq-item"><span class="d"></span>SSC CHSL</div><div class="mq-item"><span class="d"></span>Topic Wise Analysis</div>
+    <div class="mq-item"><span class="d"></span>SSC MTS</div><div class="mq-item"><span class="d"></span>Zero Investment</div>
+    <div class="mq-item"><span class="d"></span>SSC CGL</div><div class="mq-item"><span class="d"></span>Previous Year Papers</div>
+    <div class="mq-item"><span class="d"></span>NDA Written</div><div class="mq-item"><span class="d"></span>AI Pattern Analysis</div>
+    <div class="mq-item"><span class="d"></span>CDS Exam</div><div class="mq-item"><span class="d"></span>Hinglish Mentor</div>
+    <div class="mq-item"><span class="d"></span>AFCAT</div><div class="mq-item"><span class="d"></span>Free Study Plans</div>
+    <div class="mq-item"><span class="d"></span>SSC CHSL</div><div class="mq-item"><span class="d"></span>Topic Wise Analysis</div>
+    <div class="mq-item"><span class="d"></span>SSC MTS</div><div class="mq-item"><span class="d"></span>Zero Investment</div>
+  </div>
+</div>
+
+<section class="sec" id="how">
+  <div class="tag">How It Works</div>
+  <div class="sec-h">Teen Steps.<br/>Ek Dum Simple.</div>
+  <div class="how-grid">
+    <div>
+      <div class="step rv">
+        <div class="step-n">01</div>
+        <div>
+          <h3>PDF Link Paste Karo</h3>
+          <p>SSC Adda, Adda247, Testbook — kisi bhi site ka previous year paper ka link paste karo. File download ya share nahi karna.</p>
+        </div>
+      </div>
+      <div class="step rv">
+        <div class="step-n">02</div>
+        <div>
+          <h3>AI Instant Analysis</h3>
+          <p>PrepFlow ka AI poore paper ko seconds mein analyze karta hai — topics, frequency, difficulty level, pattern sab automatically.</p>
+        </div>
+      </div>
+      <div class="step rv">
+        <div class="step-n">03</div>
+        <div>
+          <h3>Mentor Se Pooch — Hinglish Mein</h3>
+          <p>Study plan, weak areas, important topics, skip strategy — AI real guidance deta hai, sirf information nahi.</p>
+        </div>
+      </div>
+    </div>
+    <div class="chat-card rv">
+      <div class="chat-bar">
+        <div class="chat-av">P</div>
+        <div>
+          <h4>PrepFlow Mentor</h4>
+          <p>● Online — Ready to help</p>
+        </div>
+      </div>
+      <div class="chat-msgs">
+        <div class="cm ai">Namaste! Maine <strong>CDS 2023 Paper I</strong> analyze kar liya. Maths dominant hai — 100 marks ke 100 questions.<br/><br/>GK mein <strong>Defence current affairs</strong> 35% tha. Kya poochna hai?</div>
+        <div class="cm user">45 din mein CDS crack ho sakta hai?</div>
+        <div class="cm ai"><strong>Haan, possible hai</strong> — agar strategy sahi ho.<br/><br/>📐 Day 1–15: Maths (Algebra + Trig)<br/>📖 Day 16–30: English + GK parallel<br/>🎯 Day 31–45: Sirf previous papers<br/><br/>Tera weak area kya hai?</div>
+      </div>
+      <div class="chat-in">
+        <div class="ci">Kuch bhi pooch Hinglish mein...</div>
+        <div class="cs"><svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-alt" id="features">
+  <div class="tag">Features</div>
+  <div class="sec-h">Sab Kuch Ek<br/>Jagah Pe.</div>
+  <div class="feat-grid">
+    <div class="fc rv">
+      <div class="fi fi-b">📄</div>
+      <h3>Direct PDF Access</h3>
+      <p>Kisi bhi website ka PDF link paste karo — PrepFlow seedha read karta hai. Download ya share ki zaroorat nahi kabhi.</p>
+    </div>
+    <div class="fc rv">
+      <div class="fi fi-b">🤖</div>
+      <h3>AI Mentor 24/7</h3>
+      <p>Raat ke 2 baje bhi mentor available. Hinglish mein pooch — strategy, shortcuts, honest feedback milega.</p>
+    </div>
+    <div class="fc rv">
+      <div class="fi fi-b">📊</div>
+      <h3>Pattern Analysis</h3>
+      <p>Last 10 saal ke papers ka pattern ek jagah. Konse topics most frequent hain, kitne marks kahan se — clearly.</p>
+    </div>
+    <div class="fc rv">
+      <div class="fi fi-g">📅</div>
+      <h3>Personalized Study Plan</h3>
+      <p>Exam date batao, weak areas batao — AI ek realistic plan banata hai jo actually follow ho sake.</p>
+    </div>
+    <div class="fc rv">
+      <div class="fi fi-b">🎯</div>
+      <h3>Topic Wise Practice</h3>
+      <p>SSC ka Percentage, CDS ka Trigonometry, NDA ka GK — specific topic ke saare PYQs filtered milenge.</p>
+    </div>
+    <div class="fc rv">
+      <div class="fi fi-g">⚡</div>
+      <h3>Hamesha Free</h3>
+      <p>Koi subscription nahi. Koi hidden charge nahi. Koi credit card nahi. Bas study karo.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="exams">
+  <div class="tag">Exam Coverage</div>
+  <div class="sec-h">SSC & Defence —<br/>Sab Cover Hai.</div>
+  <p class="sec-p">Dono categories ke major exams ke previous year papers, patterns aur AI analysis available hain.</p>
+  <div class="ex-grid">
+    <div class="ex-card rv">
+      <div class="ex-lbl lb-ssc">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg>
+        SSC Exams
+      </div>
+      <h3>Staff Selection Commission</h3>
+      <div class="tags">
+        <span class="t">CGL</span><span class="t">CHSL</span><span class="t">MTS</span>
+        <span class="t">GD Constable</span><span class="t">CPO</span><span class="t">Stenographer</span>
+      </div>
+    </div>
+    <div class="ex-card rv">
+      <div class="ex-lbl lb-def">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        Defence Exams
+      </div>
+      <h3>Indian Defence Forces</h3>
+      <div class="tags">
+        <span class="t">CDS</span><span class="t">NDA</span><span class="t">AFCAT</span>
+        <span class="t">Indian Army GD</span><span class="t">Territorial Army</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-alt">
+  <div class="tag">Tech Stack</div>
+  <div class="sec-h">100% Free.<br/>Zero Investment.</div>
+  <p class="sec-p">Poori website free tools se bani hai — ek bhi rupaya invest nahi karna.</p>
+  <div class="stack-grid">
+    <div class="sc rv"><div class="sc-logo">▲</div><h4>Vercel</h4><p>Free hosting</p><span class="free-pill">FREE FOREVER</span></div>
+    <div class="sc rv"><div class="sc-logo">🤖</div><h4>Claude AI</h4><p>AI mentor engine</p><span class="free-pill">FREE CREDITS</span></div>
+    <div class="sc rv"><div class="sc-logo">🗄️</div><h4>Supabase</h4><p>Database & storage</p><span class="free-pill">500MB FREE</span></div>
+    <div class="sc rv"><div class="sc-logo">📄</div><h4>PDF.js</h4><p>PDF reading</p><span class="free-pill">OPEN SOURCE</span></div>
+  </div>
+</section>
+
+<section class="cta-sec" id="start">
+  <div class="cta-box rv">
+    <h2>Aaj se shuru karo.<br/>Free mein.</h2>
+    <p>SSC ya Defence — jo bhi exam ho, AI mentor hamesha ready hai. Raat ke 2 baje bhi.</p>
+    <a href="#" class="btn-primary" style="font-size:17px;padding:16px 40px" onclick="alert('AI Mentor jald aa raha hai — Step 2 build ho raha hai! 🚀');return false">Mentor Se Baat Karo →</a>
+    <p class="cta-note"><strong>✓ No signup</strong> &nbsp;·&nbsp; <strong>✓ No credit card</strong> &nbsp;·&nbsp; <strong>✓ Always free</strong></p>
+  </div>
+</section>
+
+<footer>
+  <div class="fl">Prep<span>Flow</span></div>
+  <p>© 2025 PrepFlow. Made for serious aspirants.</p>
+  <div class="flinks">
+    <a href="#">Privacy</a>
+    <a href="#">Terms</a>
+    <a href="#">Contact</a>
+  </div>
+</footer>
+
+<script>
+const io=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('in'),i*80)})
+},{threshold:0.1});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

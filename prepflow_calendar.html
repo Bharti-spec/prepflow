@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrepFlow — Exam Calendar 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--brand:#7C3AED;--brand-dark:#6D28D9;--brand-dim:rgba(124,58,237,0.08);--brand-dim2:rgba(124,58,237,0.15);--brand-border:rgba(124,58,237,0.2);--bg:#FAFAFF;--surface:#fff;--border:#E5E7EB;--border2:#DDD6FE;--text:#0F172A;--text2:#4B5563;--text3:#9CA3AF}
+html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+nav{background:rgba(255,255,255,0.95);border-bottom:1px solid var(--border2);padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)}
+.logo{font-size:20px;font-weight:800;color:var(--text);text-decoration:none;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.logo-mark{width:30px;height:30px;background:var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:800}
+.logo span{color:var(--brand)}
+.nav-links{display:flex;gap:20px;align-items:center}
+.nav-links a{font-size:13px;font-weight:500;color:var(--text2);text-decoration:none}
+.nav-links a:hover,.nav-links a.active{color:var(--brand)}
+.btn-brand{background:var(--brand);color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none}
+
+.page{max-width:1100px;margin:0 auto;padding:32px 24px 80px}
+.page-head{margin-bottom:28px}
+.page-head h1{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.page-head p{font-size:14px;color:var(--text2)}
+
+/* FILTER PILLS */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+.filter-label{font-size:12px;font-weight:600;color:var(--text3)}
+.fpill{padding:6px 16px;border:1.5px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;background:var(--surface);transition:all .2s}
+.fpill:hover{border-color:var(--brand-border);color:var(--brand)}
+.fpill.active{border-color:var(--brand);background:var(--brand-dim);color:var(--brand)}
+
+/* NOTIFICATION BANNER */
+.notif-banner{background:linear-gradient(135deg,#7C3AED,#6D28D9);border-radius:14px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.nb-icon{font-size:28px}
+.nb-info{flex:1}
+.nb-info h3{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px}
+.nb-info p{font-size:13px;color:rgba(255,255,255,0.75)}
+.nb-btn{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+.nb-btn:hover{background:rgba(255,255,255,0.25)}
+.nb-btn.subscribed{background:rgba(255,255,255,0.9);color:var(--brand)}
+
+/* LAYOUT */
+.cal-layout{display:grid;grid-template-columns:1fr 340px;gap:20px}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0}
+.month-group{margin-bottom:8px}
+.month-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:8px 0;margin-bottom:8px;border-bottom:1px solid var(--border)}
+.event-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:10px;display:flex;gap:16px;transition:all .2s;cursor:pointer}
+.event-card:hover{border-color:var(--brand-border);box-shadow:0 4px 16px rgba(124,58,237,0.08);transform:translateY(-1px)}
+.event-card.notif{border-left:4px solid var(--brand)}
+.event-card.exam{border-left:4px solid #16A34A}
+.event-card.result{border-left:4px solid #D97706}
+.event-card.admit{border-left:4px solid #2563EB}
+.event-card.past{opacity:.55}
+.event-card.today-event{border-color:var(--brand);background:var(--brand-dim);box-shadow:0 0 0 3px rgba(124,58,237,0.12)}
+
+.ev-date{min-width:52px;text-align:center}
+.ev-day{font-size:24px;font-weight:800;color:var(--text);line-height:1}
+.ev-month{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.ev-year{font-size:10px;color:var(--text3)}
+
+.ev-body{flex:1}
+.ev-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.ev-exam{font-size:11px;font-weight:700;padding:2px 9px;border-radius:100px}
+.exam-ssc{background:#DBEAFE;color:#1D4ED8}
+.exam-def{background:#DCFCE7;color:#15803D}
+.exam-upsc{background:var(--brand-dim);color:var(--brand)}
+.ev-type{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;letter-spacing:.5px;text-transform:uppercase}
+.type-notif{background:var(--brand-dim);color:var(--brand)}
+.type-exam{background:#DCFCE7;color:#15803D}
+.type-result{background:#FEF3C7;color:#92400E}
+.type-admit{background:#DBEAFE;color:#1D4ED8}
+.ev-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.ev-detail{font-size:12px;color:var(--text2);line-height:1.5}
+.ev-actions{display:flex;gap:6px;margin-top:8px}
+.ev-btn{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid;font-family:'DM Sans',sans-serif;transition:all .2s}
+.ev-btn-notif{background:var(--brand-dim);color:var(--brand);border-color:var(--brand-border)}
+.ev-btn-notif:hover{background:var(--brand);color:#fff}
+.ev-btn-quiz{background:#DCFCE7;color:#15803D;border-color:#BBF7D0}
+.ev-btn-quiz:hover{background:#16A34A;color:#fff}
+.ev-btn-mentor{background:#F3F4F6;color:var(--text2);border-color:var(--border)}
+.ev-btn-mentor:hover{background:var(--brand-dim);color:var(--brand);border-color:var(--brand-border)}
+
+/* SIDEBAR */
+.cal-sidebar{display:flex;flex-direction:column;gap:16px}
+
+/* MINI CALENDAR */
+.mini-cal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:18px;overflow:hidden}
+.mc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.mc-head h3{font-size:14px;font-weight:700;color:var(--text)}
+.mc-nav{background:none;border:none;cursor:pointer;font-size:16px;color:var(--text2);padding:4px 8px;border-radius:6px}
+.mc-nav:hover{background:var(--brand-dim);color:var(--brand)}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mc-day-label{font-size:10px;font-weight:700;color:var(--text3);text-align:center;padding:4px 0;letter-spacing:.5px}
+.mc-day{font-size:12px;font-weight:500;color:var(--text2);text-align:center;padding:5px 2px;border-radius:6px;cursor:pointer;transition:all .15s;position:relative}
+.mc-day:hover{background:var(--brand-dim);color:var(--brand)}
+.mc-day.today{background:var(--brand);color:#fff;font-weight:700}
+.mc-day.has-event::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--brand)}
+.mc-day.today.has-event::after{background:#fff}
+.mc-day.has-exam::after{background:#16A34A}
+.mc-day.empty{color:transparent;cursor:default}
+.mc-day.other-month{color:var(--text3);opacity:.4}
+
+/* LEGEND */
+.legend{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.legend h4{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;letter-spacing:.5px;text-transform:uppercase}
+.leg-item{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:var(--text2)}
+.leg-item:last-child{margin-bottom:0}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* UPCOMING */
+.upcoming-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:16px}
+.upcoming-card h4{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px}
+.up-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F8FAFC}
+.up-item:last-child{border-bottom:none}
+.up-days{font-size:18px;font-weight:800;color:var(--brand);min-width:40px}
+.up-info{flex:1}
+.up-name{font-size:12px;font-weight:600;color:var(--text)}
+.up-type{font-size:11px;color:var(--text3)}
+
+/* CUTOFFS SECTION */
+.cutoffs-section{margin-top:32px}
+.cutoffs-section h2{font-size:18px;font-weight:800;letter-spacing:-.3px;margin-bottom:16px}
+.cutoff-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.ct-tab{padding:7px 16px;border:1.5px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;background:var(--surface);transition:all .2s}
+.ct-tab.active{border-color:var(--brand);background:var(--brand-dim);color:var(--brand)}
+.cutoff-table{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.ct-head{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;padding:11px 16px;background:#F8FAFC;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3)}
+.ct-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;padding:12px 16px;border-bottom:1px solid #F8FAFC;align-items:center;transition:background .15s}
+.ct-row:hover{background:#FAFAFF}
+.ct-row:last-child{border-bottom:none}
+.ct-year{font-weight:700;color:var(--text);font-size:13px}
+.ct-score{font-weight:700;color:var(--brand);font-size:13px}
+.ct-gen,.ct-obc,.ct-sc,.ct-st{font-size:13px;color:var(--text2)}
+
+@media(max-width:900px){.cal-layout{grid-template-columns:1fr}.cal-sidebar{order:-1}}
+@media(max-width:600px){.nav-links a:not(.btn-brand){display:none}}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="prepflow_v3.html"><div class="logo-mark">P</div>Prep<span>Flow</span></a>
+  <div class="nav-links">
+    <a href="prepflow_exams.html">Exam Hub</a>
+    <a href="prepflow_calendar.html" class="active">Calendar</a>
+    <a href="prepflow_progress.html">Progress</a>
+    <a href="prepflow_quiz.html">Quiz</a>
+    <a href="prepflow_chat.html" class="btn-brand">AI Mentor →</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-head">
+    <h1>📅 Exam Calendar 2026</h1>
+    <p>SSC aur Defence sab exams ki notification dates, exam dates, results — sab ek jagah. India Standard Time.</p>
+  </div>
+
+  <!-- NOTIFICATION BANNER -->
+  <div class="notif-banner">
+    <div class="nb-icon">🔔</div>
+    <div class="nb-info">
+      <h3>Exam Notifications Subscribe Karo</h3>
+      <p>Koi bhi notification, admit card ya result aane pe alert milega — bilkul free.</p>
+    </div>
+    <button class="nb-btn" id="notifBtn" onclick="subscribeNotif()">🔔 Subscribe Karo</button>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filter-row">
+    <span class="filter-label">Filter:</span>
+    <div class="fpill active" onclick="filterEvents('all',this)">All Events</div>
+    <div class="fpill" onclick="filterEvents('ssc',this)">SSC Only</div>
+    <div class="fpill" onclick="filterEvents('defence',this)">Defence Only</div>
+    <div class="fpill" onclick="filterEvents('notif',this)">Notifications</div>
+    <div class="fpill" onclick="filterEvents('exam',this)">Exam Dates</div>
+    <div class="fpill" onclick="filterEvents('result',this)">Results</div>
+  </div>
+
+  <div class="cal-layout">
+    <!-- TIMELINE -->
+    <div>
+      <div class="timeline" id="timeline"></div>
+
+      <!-- CUTOFFS -->
+      <div class="cutoffs-section">
+        <h2>📈 Past Year Cutoffs</h2>
+        <div class="cutoff-tabs">
+          <div class="ct-tab active" onclick="showCutoff('cgl',this)">SSC CGL</div>
+          <div class="ct-tab" onclick="showCutoff('chsl',this)">SSC CHSL</div>
+          <div class="ct-tab" onclick="showCutoff('mts',this)">SSC MTS</div>
+          <div class="ct-tab" onclick="showCutoff('gd',this)">SSC GD</div>
+          <div class="ct-tab" onclick="showCutoff('cds',this)">CDS</div>
+          <div class="ct-tab" onclick="showCutoff('nda',this)">NDA</div>
+          <div class="ct-tab" onclick="showCutoff('afcat',this)">AFCAT</div>
+        </div>
+        <div class="cutoff-table">
+          <div class="ct-head"><span>Year</span><span>General</span><span>OBC</span><span>SC</span><span>ST</span></div>
+          <div id="cutoffBody"></div>
+        </div>
+        <p style="font-size:11px;color:var(--text3);margin-top:8px">* Cutoffs approximate hain — official SSC/UPSC notification se verify karo.</p>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="cal-sidebar">
+      <!-- MINI CALENDAR -->
+      <div class="mini-cal">
+        <div class="mc-head">
+          <button class="mc-nav" onclick="prevMonth()">‹</button>
+          <h3 id="mcTitle">April 2026</h3>
+          <button class="mc-nav" onclick="nextMonth()">›</button>
+        </div>
+        <div class="mc-grid" id="mcGrid"></div>
+      </div>
+
+      <!-- UPCOMING -->
+      <div class="upcoming-card">
+        <h4>⚡ Upcoming This Month</h4>
+        <div id="upcomingList"></div>
+      </div>
+
+      <!-- LEGEND -->
+      <div class="legend">
+        <h4>Legend</h4>
+        <div class="leg-item"><div class="leg-dot" style="background:#7C3AED"></div>Notification / Application</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#16A34A"></div>Exam Date</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#D97706"></div>Result / Cutoff</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#2563EB"></div>Admit Card</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── EVENTS DATA 2025-2026 ──
+const EVENTS = [
+  // SSC CGL
+  {id:'cgl-notif-25',date:'2025-06-15',exam:'SSC CGL',type:'notif',title:'SSC CGL 2025 Notification',detail:'Official notification release. Application form available on ssc.gov.in. Vacancies: 17,727+',category:'ssc'},
+  {id:'cgl-app-25',date:'2025-07-15',exam:'SSC CGL',type:'notif',title:'SSC CGL 2025 Application Last Date',detail:'Online application ka last date. Fee: ₹100 (Gen/OBC), Nil (SC/ST/Women)',category:'ssc'},
+  {id:'cgl-exam-25',date:'2025-09-10',exam:'SSC CGL',type:'exam',title:'SSC CGL 2025 Tier I Exam',detail:'Computer Based Test. 100 Questions, 200 Marks, 60 Minutes. Multi-shift exam.',category:'ssc'},
+  {id:'cgl-admit-25',date:'2025-08-25',exam:'SSC CGL',type:'admit',title:'SSC CGL 2025 Tier I Admit Card',detail:'Admit card download from ssc.gov.in. Apna region ka portal use karo.',category:'ssc'},
+  {id:'cgl-result-25',date:'2025-11-20',exam:'SSC CGL',type:'result',title:'SSC CGL 2025 Tier I Result',detail:'Tier I result + cutoff marks declared. Tier II ke liye shortlisted candidates list.',category:'ssc'},
+  {id:'cgl-t2-26',date:'2026-01-15',exam:'SSC CGL',type:'exam',title:'SSC CGL 2025 Tier II Exam',detail:'Paper I: Maths (90Q/90M), Paper II: English+GK+CS. Expected date.',category:'ssc'},
+  // SSC CHSL
+  {id:'chsl-notif-25',date:'2025-05-01',exam:'SSC CHSL',type:'notif',title:'SSC CHSL 2025 Notification',detail:'CHSL 2025 application start. Posts: LDC, JSA, PA, SA. Vacancies: 3,712+',category:'ssc'},
+  {id:'chsl-exam-25',date:'2025-07-01',exam:'SSC CHSL',type:'exam',title:'SSC CHSL 2025 Tier I Exam',detail:'100 Questions, 200 Marks, 60 Minutes. Multiple shifts.',category:'ssc'},
+  {id:'chsl-result-25',date:'2025-09-15',exam:'SSC CHSL',type:'result',title:'SSC CHSL 2025 Tier I Result',detail:'Result declared with cutoff marks category-wise.',category:'ssc'},
+  {id:'chsl-t2-25',date:'2025-11-10',exam:'SSC CHSL',type:'exam',title:'SSC CHSL 2025 Tier II (Typing)',detail:'Typing test + descriptive paper. English: 35 WPM, Hindi: 30 WPM.',category:'ssc'},
+  // SSC MTS
+  {id:'mts-notif-26',date:'2026-02-01',exam:'SSC MTS',type:'notif',title:'SSC MTS 2026 Notification',detail:'MTS + Havaldar 2026 application. 10th pass required. Vacancies: 9,000+ expected.',category:'ssc'},
+  {id:'mts-app-end-26',date:'2026-03-01',exam:'SSC MTS',type:'notif',title:'SSC MTS 2026 Application Last Date',detail:'Last date to apply online. Fee: Nil for all categories.',category:'ssc'},
+  {id:'mts-exam-26',date:'2026-05-15',exam:'SSC MTS',type:'exam',title:'SSC MTS 2026 Tier I Exam',detail:'90 Questions, 270 Marks, 90 Min. No negative marking in Tier I.',category:'ssc'},
+  // SSC GD
+  {id:'gd-notif-26',date:'2026-06-01',exam:'SSC GD',type:'notif',title:'SSC GD Constable 2026 Notification',detail:'Largest SSC exam. CAPF/NIA/SSF/AR. 39,000+ vacancies expected. 10th pass.',category:'ssc'},
+  {id:'gd-exam-26',date:'2026-09-01',exam:'SSC GD',type:'exam',title:'SSC GD 2026 CBT Exam',detail:'80 Questions, 160 Marks, 60 Minutes. After CBT: PET + PST + Medical.',category:'ssc'},
+  // CDS
+  {id:'cds1-notif-26',date:'2026-01-07',exam:'CDS',type:'notif',title:'CDS I 2026 Notification — UPSC',detail:'UPSC CDS I 2026 notification. IMA/INA/AFA/OTA. Graduation required.',category:'defence'},
+  {id:'cds1-app-26',date:'2026-01-27',exam:'CDS',type:'notif',title:'CDS I 2026 Application Last Date',detail:'Online application deadline on upsc.gov.in. Fee: ₹200.',category:'defence'},
+  {id:'cds1-exam-26',date:'2026-04-05',exam:'CDS',type:'exam',title:'CDS I 2026 Written Exam',detail:'English (100M) + GK (100M) + Maths (100M). 3 papers, 6 hours total.',category:'defence'},
+  {id:'cds1-result-26',date:'2026-07-15',exam:'CDS',type:'result',title:'CDS I 2026 Written Result',detail:'Result + marks declared. SSB interview dates announced for qualified.',category:'defence'},
+  {id:'cds2-notif-26',date:'2026-05-28',exam:'CDS',type:'notif',title:'CDS II 2026 Notification — UPSC',detail:'CDS II 2026 application begins.',category:'defence'},
+  {id:'cds2-exam-26',date:'2026-09-13',exam:'CDS',type:'exam',title:'CDS II 2026 Written Exam',detail:'Same pattern as CDS I. IMA/INA/AFA/OTA posts.',category:'defence'},
+  // NDA
+  {id:'nda1-notif-26',date:'2026-01-14',exam:'NDA',type:'notif',title:'NDA I 2026 Notification — UPSC',detail:'NDA & NA I 2026. 12th pass (appearing/passed). Age: 16.5-19.5 years.',category:'defence'},
+  {id:'nda1-exam-26',date:'2026-04-19',exam:'NDA',type:'exam',title:'NDA I 2026 Written Exam',detail:'Maths (300M) + GAT (600M) = 900 marks total. 5 hours.',category:'defence'},
+  {id:'nda1-result-26',date:'2026-07-01',exam:'NDA',type:'result',title:'NDA I 2026 Written Result',detail:'Qualified candidates called for SSB interview at various centres.',category:'defence'},
+  {id:'nda2-notif-26',date:'2026-06-10',exam:'NDA',type:'notif',title:'NDA II 2026 Notification — UPSC',detail:'NDA & NA II 2026 application.',category:'defence'},
+  {id:'nda2-exam-26',date:'2026-09-06',exam:'NDA',type:'exam',title:'NDA II 2026 Written Exam',detail:'Maths + GAT. 900 marks total.',category:'defence'},
+  // AFCAT
+  {id:'afcat1-notif-26',date:'2026-01-02',exam:'AFCAT',type:'notif',title:'AFCAT I 2026 Notification',detail:'Air Force Common Admission Test I 2026. Flying/Ground Duty/Technical. Graduation required.',category:'defence'},
+  {id:'afcat1-exam-26',date:'2026-02-21',exam:'AFCAT',type:'exam',title:'AFCAT I 2026 Exam',detail:'100 Questions, 300 Marks, 120 Min. Online exam at test centres.',category:'defence'},
+  {id:'afcat1-result-26',date:'2026-03-15',exam:'AFCAT',type:'result',title:'AFCAT I 2026 Result',detail:'Online result. Qualified for AFSB interview.',category:'defence'},
+  {id:'afcat2-notif-26',date:'2026-06-01',exam:'AFCAT',type:'notif',title:'AFCAT II 2026 Notification',detail:'AFCAT II 2026 application begins.',category:'defence'},
+  {id:'afcat2-exam-26',date:'2026-08-22',exam:'AFCAT',type:'exam',title:'AFCAT II 2026 Exam',detail:'100 Questions, 300 Marks, 120 Min.',category:'defence'},
+  {id:'afcat2-result-26',date:'2026-09-10',exam:'AFCAT',type:'result',title:'AFCAT II 2026 Result',detail:'Result declared online.',category:'defence'},
+];
+
+const CUTOFFS = {
+  cgl:[
+    {year:'2024',gen:'143.5',obc:'138.0',sc:'128.2',st:'118.5'},
+    {year:'2023',gen:'140.5',obc:'135.2',sc:'125.8',st:'115.0'},
+    {year:'2022',gen:'137.8',obc:'132.5',sc:'122.1',st:'112.3'},
+    {year:'2021',gen:'135.2',obc:'130.0',sc:'119.5',st:'109.8'},
+    {year:'2020',gen:'130.0',obc:'125.5',sc:'115.0',st:'105.2'},
+    {year:'2019',gen:'127.5',obc:'122.0',sc:'112.5',st:'102.0'},
+  ],
+  chsl:[
+    {year:'2024',gen:'134.0',obc:'130.0',sc:'121.5',st:'112.0'},
+    {year:'2023',gen:'132.0',obc:'128.5',sc:'119.0',st:'109.5'},
+    {year:'2022',gen:'129.5',obc:'125.0',sc:'116.5',st:'107.0'},
+    {year:'2021',gen:'125.0',obc:'120.5',sc:'112.0',st:'103.5'},
+    {year:'2020',gen:'120.0',obc:'116.0',sc:'108.0',st:'99.5'},
+  ],
+  mts:[
+    {year:'2024',gen:'107.0',obc:'102.0',sc:'94.5',st:'88.0'},
+    {year:'2023',gen:'105.0',obc:'100.0',sc:'92.0',st:'85.5'},
+    {year:'2021',gen:'100.0',obc:'95.5',sc:'88.0',st:'82.0'},
+    {year:'2020',gen:'96.5',obc:'92.0',sc:'85.0',st:'79.5'},
+  ],
+  gd:[
+    {year:'2024',gen:'100.5',obc:'95.0',sc:'88.5',st:'82.0'},
+    {year:'2022',gen:'98.0',obc:'93.0',sc:'86.0',st:'80.0'},
+    {year:'2021',gen:'95.5',obc:'90.5',sc:'83.5',st:'77.5'},
+    {year:'2018',gen:'92.0',obc:'88.0',sc:'81.0',st:'75.0'},
+  ],
+  cds:[
+    {year:'2024 II',gen:'94',obc:'88',sc:'80',st:'74'},
+    {year:'2024 I',gen:'91',obc:'85',sc:'78',st:'72'},
+    {year:'2023 II',gen:'88',obc:'82',sc:'75',st:'69'},
+    {year:'2023 I',gen:'85',obc:'79',sc:'72',st:'66'},
+    {year:'2022 II',gen:'83',obc:'77',sc:'70',st:'64'},
+    {year:'2022 I',gen:'80',obc:'74',sc:'68',st:'62'},
+  ],
+  nda:[
+    {year:'2024 II',gen:'370',obc:'360',sc:'342',st:'330'},
+    {year:'2024 I',gen:'360',obc:'350',sc:'333',st:'320'},
+    {year:'2023 II',gen:'355',obc:'345',sc:'328',st:'315'},
+    {year:'2023 I',gen:'345',obc:'335',sc:'318',st:'305'},
+    {year:'2022 II',gen:'360',obc:'349',sc:'322',st:'308'},
+    {year:'2022 I',gen:'355',obc:'344',sc:'318',st:'305'},
+  ],
+  afcat:[
+    {year:'2024 II',gen:'158',obc:'154',sc:'146',st:'140'},
+    {year:'2024 I',gen:'155',obc:'151',sc:'143',st:'137'},
+    {year:'2023 II',gen:'152',obc:'148',sc:'140',st:'134'},
+    {year:'2023 I',gen:'150',obc:'145',sc:'138',st:'132'},
+    {year:'2022 II',gen:'148',obc:'143',sc:'136',st:'130'},
+  ],
+};
+
+// ── STATE ──
+let currentFilter='all', currentCutoff='cgl';
+let mcYear=2026, mcMonth=3; // April 2026 (0-indexed)
+let subscribedExams=JSON.parse(localStorage.getItem('pf_subscribed')||'[]');
+
+// ── IST DATE ──
+function getISTToday(){
+  return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+}
+
+function filterEvents(type, el){
+  document.querySelectorAll('.fpill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  currentFilter=type;
+  renderTimeline();
+}
+
+function renderTimeline(){
+  const today=getISTToday();
+  const todayStr=today.toISOString().slice(0,10);
+  let filtered=[...EVENTS];
+  if(currentFilter==='ssc') filtered=filtered.filter(e=>e.category==='ssc');
+  else if(currentFilter==='defence') filtered=filtered.filter(e=>e.category==='defence');
+  else if(currentFilter==='notif') filtered=filtered.filter(e=>e.type==='notif');
+  else if(currentFilter==='exam') filtered=filtered.filter(e=>e.type==='exam');
+  else if(currentFilter==='result') filtered=filtered.filter(e=>e.type==='result');
+
+  filtered.sort((a,b)=>a.date.localeCompare(b.date));
+
+  // Group by month
+  const groups={};
+  filtered.forEach(e=>{
+    const d=new Date(e.date);
+    const key=d.toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+    if(!groups[key]) groups[key]=[];
+    groups[key].push(e);
+  });
+
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  let html='';
+  Object.entries(groups).forEach(([month,events])=>{
+    html+=`<div class="month-group"><div class="month-label">${month}</div>`;
+    events.forEach(e=>{
+      const d=new Date(e.date);
+      const isPast=e.date<todayStr;
+      const isToday=e.date===todayStr;
+      const typeClass={notif:'notif',exam:'exam',result:'result',admit:'admit'}[e.type]||'notif';
+      const typeLabel={notif:'Notification',exam:'Exam Date',result:'Result',admit:'Admit Card'}[e.type];
+      const examClass=e.category==='ssc'?'exam-ssc':e.category==='defence'?'exam-def':'exam-upsc';
+      const subbed=subscribedExams.includes(e.id);
+      html+=`<div class="event-card ${typeClass}${isPast?' past':''}${isToday?' today-event':''}">
+        <div class="ev-date">
+          <div class="ev-day">${d.getDate()}</div>
+          <div class="ev-month">${months[d.getMonth()]}</div>
+          <div class="ev-year">${d.getFullYear()}</div>
+        </div>
+        <div class="ev-body">
+          <div class="ev-top">
+            <span class="ev-exam ${examClass}">${e.exam}</span>
+            <span class="ev-type type-${typeClass}">${typeLabel}</span>
+            ${isToday?'<span style="font-size:10px;font-weight:700;background:#7C3AED;color:#fff;padding:2px 8px;border-radius:100px">TODAY</span>':''}
+            ${isPast?'<span style="font-size:10px;color:#9CA3AF;font-weight:600">Past</span>':''}
+          </div>
+          <div class="ev-title">${e.title}</div>
+          <div class="ev-detail">${e.detail}</div>
+          <div class="ev-actions">
+            ${!isPast?`<button class="ev-btn ${subbed?'ev-btn-quiz':'ev-btn-notif'}" onclick="toggleSubscribe('${e.id}',this)">${subbed?'✅ Subscribed':'🔔 Alert Set Karo'}</button>`:''}
+            <button class="ev-btn ev-btn-quiz" onclick="window.location.href='prepflow_quiz.html'">Practice →</button>
+            <button class="ev-btn ev-btn-mentor" onclick="window.location.href='prepflow_chat.html'">AI Mentor</button>
+          </div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+  document.getElementById('timeline').innerHTML=html||'<div style="padding:40px;text-align:center;color:#9CA3AF">Is filter mein koi events nahi hain.</div>';
+}
+
+function toggleSubscribe(id, btn){
+  if(subscribedExams.includes(id)){
+    subscribedExams=subscribedExams.filter(s=>s!==id);
+    btn.textContent='🔔 Alert Set Karo';
+    btn.className='ev-btn ev-btn-notif';
+  } else {
+    subscribedExams.push(id);
+    btn.textContent='✅ Subscribed';
+    btn.className='ev-btn ev-btn-quiz';
+  }
+  localStorage.setItem('pf_subscribed',JSON.stringify(subscribedExams));
+}
+
+function subscribeNotif(){
+  const btn=document.getElementById('notifBtn');
+  if(btn.classList.contains('subscribed')){
+    btn.classList.remove('subscribed');
+    btn.textContent='🔔 Subscribe Karo';
+  } else {
+    btn.classList.add('subscribed');
+    btn.textContent='✅ Subscribed!';
+    if('Notification' in window) Notification.requestPermission();
+  }
+}
+
+// ── MINI CALENDAR ──
+function renderMiniCal(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('mcTitle').textContent=months[mcMonth]+' '+mcYear;
+  const today=getISTToday();
+  const todayStr=today.toISOString().slice(0,10);
+  const eventDates=new Set(EVENTS.map(e=>e.date));
+  const examDates=new Set(EVENTS.filter(e=>e.type==='exam').map(e=>e.date));
+
+  const first=new Date(mcYear,mcMonth,1).getDay();
+  const daysInMonth=new Date(mcYear,mcMonth+1,0).getDate();
+  const labels=['S','M','T','W','T','F','S'];
+  let html=labels.map(l=>`<div class="mc-day-label">${l}</div>`).join('');
+  for(let i=0;i<first;i++) html+=`<div class="mc-day empty">0</div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const ds=`${mcYear}-${String(mcMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=ds===todayStr;
+    const hasEv=eventDates.has(ds);
+    const hasExam=examDates.has(ds);
+    html+=`<div class="mc-day${isToday?' today':''}${hasExam?' has-exam':hasEv?' has-event':''}" title="${ds}" onclick="scrollToDate('${ds}')">${d}</div>`;
+  }
+  document.getElementById('mcGrid').innerHTML=html;
+}
+function prevMonth(){if(mcMonth===0){mcMonth=11;mcYear--;}else mcMonth--;renderMiniCal();}
+function nextMonth(){if(mcMonth===11){mcMonth=0;mcYear++;}else mcMonth++;renderMiniCal();}
+function scrollToDate(ds){
+  const cards=document.querySelectorAll('.event-card');
+  // highlight matching - basic scroll
+  window.scrollTo({top:200,behavior:'smooth'});
+}
+
+// ── UPCOMING ──
+function renderUpcoming(){
+  const today=getISTToday();
+  const todayStr=today.toISOString().slice(0,10);
+  const upcoming=EVENTS.filter(e=>e.date>=todayStr).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+  const html=upcoming.map(e=>{
+    const d=new Date(e.date);
+    const diff=Math.ceil((d-today)/864e5);
+    return `<div class="up-item">
+      <div class="up-days">${diff===0?'Today':diff+'d'}</div>
+      <div class="up-info">
+        <div class="up-name">${e.exam} — ${e.type==='notif'?'Notification':e.type==='exam'?'Exam':'Result'}</div>
+        <div class="up-type">${e.title.slice(0,35)}...</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('upcomingList').innerHTML=html||'<div style="font-size:13px;color:#9CA3AF;padding:8px 0">Koi upcoming events nahi.</div>';
+}
+
+// ── CUTOFFS ──
+function showCutoff(key, el){
+  document.querySelectorAll('.ct-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  currentCutoff=key;
+  const data=CUTOFFS[key]||[];
+  document.getElementById('cutoffBody').innerHTML=data.map(c=>`
+    <div class="ct-row">
+      <span class="ct-year">${c.year}</span>
+      <span class="ct-score">${c.gen}</span>
+      <span class="ct-gen">${c.obc}</span>
+      <span class="ct-obc">${c.sc}</span>
+      <span class="ct-sc">${c.st}</span>
+    </div>`).join('');
+}
+
+// Init
+renderTimeline();
+renderMiniCal();
+renderUpcoming();
+showCutoff('cgl',document.querySelector('.ct-tab'));
+</script>
+</body>
+</html>

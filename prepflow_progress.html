@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrepFlow — Progress Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'DM Sans',sans-serif;background:#FAFAFF;color:#0F172A}
+nav{background:#fff;border-bottom:1px solid #E2E8F0;padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-size:18px;font-weight:800;color:#0F172A;text-decoration:none}
+.logo span{color:#7C3AED}
+.nav-right{display:flex;gap:16px;align-items:center}
+.nav-right a{font-size:13px;font-weight:500;color:#64748B;text-decoration:none}
+.nav-right a:hover{color:#0F172A}
+.nav-right a.active{color:#7C3AED;font-weight:600}
+.btn-nav{background:#7C3AED;color:#fff!important;padding:7px 18px;border-radius:7px;font-size:13px;font-weight:600!important}
+
+.page{max-width:960px;margin:0 auto;padding:32px 24px 80px}
+
+/* HEADER ROW */
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+.page-head h1{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.page-head p{font-size:14px;color:#64748B;margin-top:3px}
+.date-badge{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;color:#6D28D9;white-space:nowrap;text-align:right}
+.date-badge span{display:block;font-size:11px;font-weight:500;color:#64748B;margin-top:2px}
+
+/* EXAM SELECTOR */
+.exam-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.ex-pill{padding:8px 18px;border:1.5px solid #E2E8F0;border-radius:100px;font-size:13px;font-weight:600;color:#475569;cursor:pointer;background:#fff;transition:all .2s}
+.ex-pill:hover{border-color:#DDD6FE;color:#6D28D9}
+.ex-pill.active{border-color:#7C3AED;background:#F5F3FF;color:#6D28D9}
+
+/* OVERVIEW STRIP */
+.overview-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.ov-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:18px;text-align:center}
+.ov-num{font-size:28px;font-weight:800;letter-spacing:-1px;color:#0F172A}
+.ov-num.blue{color:#7C3AED}
+.ov-num.green{color:#16A34A}
+.ov-num.red{color:#DC2626}
+.ov-num.amber{color:#D97706}
+.ov-lbl{font-size:12px;color:#94A3B8;margin-top:4px}
+
+/* EXAM COUNTDOWN */
+.countdown-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.cd-icon{font-size:28px}
+.cd-info{flex:1}
+.cd-info h3{font-size:15px;font-weight:700;color:#0F172A}
+.cd-info p{font-size:13px;color:#64748B;margin-top:2px}
+.cd-days{display:flex;gap:10px;margin-left:auto}
+.cd-box{background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:12px 16px;text-align:center;min-width:60px}
+.cd-box .cd-num{font-size:22px;font-weight:800;color:#6D28D9;letter-spacing:-1px}
+.cd-box .cd-unit{font-size:10px;font-weight:700;color:#64748B;letter-spacing:1px;text-transform:uppercase}
+
+/* SUBJECT PROGRESS */
+.section-label{font-size:12px;font-weight:700;color:#94A3B8;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px}
+.subjects-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+.subj-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:18px;transition:border .2s}
+.subj-card:hover{border-color:#DDD6FE}
+.subj-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.subj-left{display:flex;align-items:center;gap:10px}
+.subj-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.si-blue{background:#EDE9FE}
+.si-green{background:#DCFCE7}
+.si-purple{background:#F3E8FF}
+.si-amber{background:#FEF3C7}
+.si-red{background:#FEE2E2}
+.si-teal{background:#CCFBF1}
+.subj-name{font-size:14px;font-weight:700;color:#0F172A}
+.subj-pct{font-size:14px;font-weight:800;color:#7C3AED}
+.prog-bar-wrap{height:7px;background:#F1F5F9;border-radius:100px;overflow:hidden;margin-bottom:10px}
+.prog-bar-fill{height:100%;border-radius:100px;transition:width .8s ease}
+.pb-blue{background:#7C3AED}
+.pb-green{background:#16A34A}
+.pb-purple{background:#7C3AED}
+.pb-amber{background:#D97706}
+.pb-red{background:#DC2626}
+.pb-teal{background:#0D9488}
+.subj-bottom{display:flex;align-items:center;justify-content:space-between}
+.subj-meta{font-size:12px;color:#94A3B8}
+.subj-status{font-size:11px;font-weight:600;padding:2px 9px;border-radius:100px}
+.ss-strong{background:#DCFCE7;color:#15803D}
+.ss-ok{background:#EDE9FE;color:#6D28D9}
+.ss-weak{background:#FEE2E2;color:#DC2626}
+.ss-not{background:#F1F5F9;color:#64748B}
+.update-btn{font-size:11px;font-weight:600;color:#7C3AED;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;padding:0;margin-top:6px}
+
+/* STUDY LOG */
+.log-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;margin-bottom:24px;overflow:hidden}
+.log-header{padding:16px 20px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.log-header h3{font-size:15px;font-weight:700;color:#0F172A}
+.log-add-row{display:flex;gap:8px;padding:14px 20px;border-bottom:1px solid #F1F5F9;flex-wrap:wrap}
+.log-input{flex:1;padding:8px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:#0F172A;outline:none;min-width:140px}
+.log-input:focus{border-color:#C4B5FD}
+.log-select{padding:8px 12px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:#0F172A;outline:none;background:#fff}
+.log-btn{padding:8px 18px;background:#7C3AED;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.log-btn:hover{background:#6D28D9}
+.log-list{max-height:280px;overflow-y:auto}
+.log-row{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #FAFAFF;transition:background .15s}
+.log-row:hover{background:#FAFAFA}
+.log-row:last-child{border-bottom:none}
+.log-date{font-size:11px;font-weight:600;color:#94A3B8;min-width:52px}
+.log-subj{font-size:12px;font-weight:700;padding:2px 10px;border-radius:100px;background:#F5F3FF;color:#6D28D9}
+.log-topic{font-size:13px;color:#334155;flex:1}
+.log-time{font-size:12px;font-weight:600;color:#64748B;white-space:nowrap}
+.log-del{font-size:14px;color:#CBD5E1;cursor:pointer;background:none;border:none;padding:0 4px}
+.log-del:hover{color:#DC2626}
+.log-empty{padding:32px;text-align:center;color:#94A3B8;font-size:14px}
+
+/* WEAK AREAS */
+.weak-section{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:24px}
+.weak-section h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.weak-grid{display:flex;gap:8px;flex-wrap:wrap}
+.weak-chip{padding:7px 14px;border-radius:100px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer}
+.wc-high{background:#FEE2E2;color:#DC2626;border:1px solid #FECACA}
+.wc-med{background:#FEF3C7;color:#92400E;border:1px solid #FDE68A}
+.wc-ok{background:#DCFCE7;color:#15803D;border:1px solid #BBF7D0}
+
+/* HEATMAP */
+.heat-section{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:24px}
+.heat-section h3{font-size:15px;font-weight:700;margin-bottom:16px}
+.heat-grid{display:flex;gap:4px;flex-wrap:wrap}
+.heat-cell{width:16px;height:16px;border-radius:3px;cursor:pointer;transition:transform .1s}
+.heat-cell:hover{transform:scale(1.3)}
+.h0{background:#F1F5F9}
+.h1{background:#DDD6FE}
+.h2{background:#A78BFA}
+.h3{background:#7C3AED}
+.h4{background:#6D28D9}
+.heat-legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:#94A3B8}
+.heat-legend .heat-cell{cursor:default}
+
+/* QUIZ HISTORY */
+.quiz-hist{background:#fff;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;margin-bottom:24px}
+.quiz-hist h3{font-size:15px;font-weight:700;padding:16px 20px;border-bottom:1px solid #E2E8F0}
+.qh-row{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #FAFAFF}
+.qh-row:last-child{border-bottom:none}
+.qh-exam{font-size:12px;font-weight:700;background:#F5F3FF;color:#6D28D9;padding:3px 10px;border-radius:100px;white-space:nowrap}
+.qh-info{flex:1;font-size:13px;color:#334155}
+.qh-score{font-size:14px;font-weight:800;color:#0F172A}
+.qh-score.good{color:#16A34A}
+.qh-score.ok{color:#D97706}
+.qh-score.bad{color:#DC2626}
+.qh-date{font-size:11px;color:#94A3B8}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:380px;margin:0 16px}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px}
+.modal-label{font-size:12px;font-weight:600;color:#64748B;margin-bottom:6px;margin-top:14px}
+.modal-slider{width:100%;accent-color:#7C3AED;margin-bottom:4px}
+.modal-val{font-size:22px;font-weight:800;color:#7C3AED;text-align:center}
+.modal-actions{display:flex;gap:8px;margin-top:20px}
+.btn-cancel{flex:1;padding:10px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:14px;font-weight:600;color:#64748B;cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif}
+.btn-save{flex:1;padding:10px;background:#7C3AED;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+@media(max-width:600px){
+  .overview-strip{grid-template-columns:1fr 1fr}
+  .subjects-grid{grid-template-columns:1fr}
+  .cd-days{margin-left:0;width:100%}
+  nav .nav-right a:not(.btn-nav){display:none}
+}
+</style>
+</head>
+<body>
+
+<nav style="background:rgba(255,255,255,0.95);border-bottom:1px solid #DDD6FE;padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)">
+  <a href="prepflow_v3.html" style="font-size:19px;font-weight:800;color:#0F172A;text-decoration:none;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
+    <div style="width:30px;height:30px;background:#7C3AED;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:800">P</div>
+    Prep<span style="color:#7C3AED">Flow</span>
+  </a>
+  <div style="display:flex;gap:20px;align-items:center">
+    <a href="prepflow_exams.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Exam Hub</a>
+    <a href="prepflow_calendar.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Calendar</a>
+    <a href="prepflow_pdfloader.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">PDF Loader</a>
+    <a href="prepflow_quiz.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Quiz</a>
+    <a href="prepflow_progress.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Progress</a>
+    <a href="prepflow_auth.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Login</a>
+    <a href="prepflow_chat.html" style="background:#7C3AED;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">AI Mentor →</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="page-head">
+    <div>
+      <h1>📈 My Progress Tracker</h1>
+      <p>Apni preparation ko track karo — subject-wise, daily study log, weak areas sab ek jagah.</p>
+    </div>
+    <div class="date-badge" id="dateDisplay">
+      Loading...
+      <span id="timeDisplay">India Standard Time</span>
+    </div>
+  </div>
+
+  <!-- EXAM SELECTOR -->
+  <div class="exam-selector">
+    <div class="ex-pill active" onclick="setExam(this,'cgl','SSC CGL 2025','2025-12-15')">SSC CGL</div>
+    <div class="ex-pill" onclick="setExam(this,'chsl','SSC CHSL 2025','2025-10-20')">SSC CHSL</div>
+    <div class="ex-pill" onclick="setExam(this,'mts','SSC MTS 2025','2025-09-10')">SSC MTS</div>
+    <div class="ex-pill" onclick="setExam(this,'gd','SSC GD 2025','2026-01-20')">SSC GD</div>
+    <div class="ex-pill" onclick="setExam(this,'cds','CDS II 2026','2026-09-13')">CDS</div>
+    <div class="ex-pill" onclick="setExam(this,'nda','NDA II 2026','2026-09-06')">NDA</div>
+    <div class="ex-pill" onclick="setExam(this,'afcat','AFCAT II 2026','2026-08-22')">AFCAT</div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="overview-strip">
+    <div class="ov-card"><div class="ov-num blue" id="ovStudied">0</div><div class="ov-lbl">Days Studied</div></div>
+    <div class="ov-card"><div class="ov-num green" id="ovHours">0</div><div class="ov-lbl">Total Hours</div></div>
+    <div class="ov-card"><div class="ov-num amber" id="ovStreak">0</div><div class="ov-lbl">Day Streak 🔥</div></div>
+    <div class="ov-card"><div class="ov-num" id="ovReady">0%</div><div class="ov-lbl">Overall Ready</div></div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown-card">
+    <div class="cd-icon">🎯</div>
+    <div class="cd-info">
+      <h3 id="cdExamName">SSC CGL 2025</h3>
+      <p id="cdNote">Expected exam date — official notification pe verify karo</p>
+    </div>
+    <div class="cd-days">
+      <div class="cd-box"><div class="cd-num" id="cdDays">—</div><div class="cd-unit">Days</div></div>
+      <div class="cd-box"><div class="cd-num" id="cdWeeks">—</div><div class="cd-unit">Weeks</div></div>
+      <div class="cd-box"><div class="cd-num" id="cdMonths">—</div><div class="cd-unit">Months</div></div>
+    </div>
+  </div>
+
+  <!-- STUDY HEATMAP -->
+  <div class="heat-section">
+    <h3>📅 Study Activity — 2026</h3>
+    <div class="heat-grid" id="heatGrid"></div>
+    <div class="heat-legend">
+      <span>Less</span>
+      <div class="heat-cell h0"></div>
+      <div class="heat-cell h1"></div>
+      <div class="heat-cell h2"></div>
+      <div class="heat-cell h3"></div>
+      <div class="heat-cell h4"></div>
+      <span>More</span>
+    </div>
+  </div>
+
+  <!-- SUBJECT PROGRESS -->
+  <div class="section-label">Subject-wise Preparation</div>
+  <div class="subjects-grid" id="subjectsGrid"></div>
+
+  <!-- WEAK AREAS -->
+  <div class="weak-section">
+    <h3>⚠️ Weak Areas <span style="font-size:12px;font-weight:500;color:#94A3B8">(Quiz results se auto-detect + manual)</span></h3>
+    <div class="weak-grid" id="weakGrid"></div>
+  </div>
+
+  <!-- STUDY LOG -->
+  <div class="log-card">
+    <div class="log-header">
+      <h3>📋 Daily Study Log</h3>
+      <div style="font-size:12px;color:#94A3B8" id="todayDate"></div>
+    </div>
+    <div class="log-add-row">
+      <input class="log-input" id="logTopic" placeholder="Aaj kya padha? (e.g. Percentage formulas)" />
+      <select class="log-select" id="logSubj">
+        <option>Maths</option>
+        <option>English</option>
+        <option>Physics</option>
+        <option>Chemistry</option>
+        <option>Biology</option>
+        <option>History</option>
+        <option>Geography</option>
+        <option>Economics</option>
+        <option>Polity</option>
+        <option>Reasoning</option>
+        <option>Current Affairs</option>
+      </select>
+      <input class="log-input" id="logHours" placeholder="Hours" type="number" min="0.5" max="12" step="0.5" style="max-width:80px"/>
+      <button class="log-btn" onclick="addLog()">+ Add</button>
+    </div>
+    <div class="log-list" id="logList">
+      <div class="log-empty">Abhi tak koi log nahi — aaj se shuru karo! 📚</div>
+    </div>
+  </div>
+
+  <!-- QUIZ HISTORY -->
+  <div class="quiz-hist">
+    <h3>🎯 Recent Quiz Results</h3>
+    <div id="quizHistory">
+      <div class="qh-row"><span class="qh-exam">SSC CGL</span><span class="qh-info">Maths Practice · 15 Questions</span><span class="qh-score good">80%</span><span class="qh-date">Today</span></div>
+      <div class="qh-row"><span class="qh-exam">CDS</span><span class="qh-info">GK · 20 Questions</span><span class="qh-score ok">65%</span><span class="qh-date">Yesterday</span></div>
+      <div class="qh-row"><span class="qh-exam">SSC CGL</span><span class="qh-info">English · 25 Questions</span><span class="qh-score bad">48%</span><span class="qh-date">2 days ago</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- UPDATE MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h3>📊 Update Progress — <span id="modalSubjName"></span></h3>
+    <div class="modal-label">Preparation Level (%)</div>
+    <div class="modal-val" id="modalVal">50%</div>
+    <input type="range" class="modal-slider" min="0" max="100" step="5" value="50" id="modalSlider" oninput="document.getElementById('modalVal').textContent=this.value+'%'"/>
+    <div class="modal-label">Strength Level</div>
+    <select class="log-select" style="width:100%" id="modalStatus">
+      <option value="strong">💪 Strong — Confident hoon</option>
+      <option value="ok" selected>👍 OK — Aur practice chahiye</option>
+      <option value="weak">⚠️ Weak — Bahut kaam baaki hai</option>
+      <option value="not">❌ Not Started — Shuru nahi kiya</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProgress()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATE/TIME (India IST) ──
+function updateIST(){
+  const now=new Date();
+  const ist=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d=`${days[ist.getDay()]}, ${ist.getDate()} ${months[ist.getMonth()]} 2026`;
+  const t=ist.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+  document.getElementById('dateDisplay').childNodes[0].textContent=d;
+  document.getElementById('timeDisplay').textContent=t+' IST';
+  document.getElementById('todayDate').textContent='Today: '+d;
+}
+updateIST();
+setInterval(updateIST,30000);
+
+// ── STATE ──
+const SUBJECTS={
+  cgl:['Maths','English','Reasoning','History','Geography','Polity','Economics','Current Affairs'],
+  chsl:['Maths','English','Reasoning','History','Geography','Biology','Current Affairs'],
+  mts:['Maths','English','Reasoning','History','Geography','Biology'],
+  gd:['Maths','English','Reasoning','History','Geography','Biology'],
+  cds:['Maths','English','History','Geography','Polity','Economics','Physics','Biology'],
+  nda:['Maths','English','Physics','Chemistry','Biology','History','Geography','Polity'],
+  afcat:['Maths','English','Reasoning','Physics','History','Geography','Current Affairs']
+};
+
+const ICONS={Maths:'➗',English:'📖',Reasoning:'🧠',History:'🏛️',Geography:'🌍',Polity:'⚖️',Economics:'📊',Physics:'⚛️',Chemistry:'🧪',Biology:'🌱','Current Affairs':'📰'};
+const COLORS={Maths:{ic:'si-blue',bar:'pb-blue'},English:{ic:'si-purple',bar:'pb-purple'},Reasoning:{ic:'si-amber',bar:'pb-amber'},History:{ic:'si-teal',bar:'pb-teal'},Geography:{ic:'si-green',bar:'pb-green'},Polity:{ic:'si-blue',bar:'pb-blue'},Economics:{ic:'si-amber',bar:'pb-amber'},Physics:{ic:'si-blue',bar:'pb-blue'},Chemistry:{ic:'si-red',bar:'pb-red'},Biology:{ic:'si-green',bar:'pb-green'},'Current Affairs':{ic:'si-teal',bar:'pb-teal'}};
+
+let progress=JSON.parse(localStorage.getItem('pf_progress')||'{}');
+let logs=JSON.parse(localStorage.getItem('pf_logs')||'[]');
+let heatData=JSON.parse(localStorage.getItem('pf_heat')||'{}');
+let currentExam='cgl',currentExamDate='2025-12-15',editSubj='';
+
+function save(){
+  localStorage.setItem('pf_progress',JSON.stringify(progress));
+  localStorage.setItem('pf_logs',JSON.stringify(logs));
+  localStorage.setItem('pf_heat',JSON.stringify(heatData));
+}
+
+function setExam(el,key,name,date){
+  document.querySelectorAll('.ex-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  currentExam=key; currentExamDate=date;
+  document.getElementById('cdExamName').textContent=name;
+  updateCountdown(date);
+  renderSubjects();
+  renderWeakAreas();
+  renderOverview();
+}
+
+function updateCountdown(dateStr){
+  const now=new Date();
+  const ist=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  const target=new Date(dateStr);
+  const diff=target-ist;
+  if(diff<0){document.getElementById('cdDays').textContent='Past';return;}
+  const d=Math.ceil(diff/864e5);
+  document.getElementById('cdDays').textContent=d;
+  document.getElementById('cdWeeks').textContent=Math.ceil(d/7);
+  document.getElementById('cdMonths').textContent=Math.ceil(d/30);
+}
+
+function renderSubjects(){
+  const subjs=SUBJECTS[currentExam]||[];
+  const grid=document.getElementById('subjectsGrid');
+  grid.innerHTML=subjs.map(s=>{
+    const p=progress[currentExam]?.[s]||{pct:0,status:'not'};
+    const c=COLORS[s]||{ic:'si-blue',bar:'pb-blue'};
+    const statusMap={strong:'ss-strong',ok:'ss-ok',weak:'ss-weak',not:'ss-not'};
+    const statusLabel={strong:'Strong 💪',ok:'OK 👍',weak:'Weak ⚠️',not:'Not Started'};
+    return `<div class="subj-card">
+      <div class="subj-top">
+        <div class="subj-left">
+          <div class="subj-icon ${c.ic}">${ICONS[s]||'📚'}</div>
+          <div class="subj-name">${s}</div>
+        </div>
+        <div class="subj-pct">${p.pct}%</div>
+      </div>
+      <div class="prog-bar-wrap"><div class="prog-bar-fill ${c.bar}" style="width:${p.pct}%"></div></div>
+      <div class="subj-bottom">
+        <span class="subj-status ${statusMap[p.status]||'ss-not'}">${statusLabel[p.status]||'Not Started'}</span>
+        <button class="update-btn" onclick="openModal('${s}')">Update →</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWeakAreas(){
+  const subjs=SUBJECTS[currentExam]||[];
+  const weak=subjs.filter(s=>{
+    const p=progress[currentExam]?.[s];
+    return p&&(p.status==='weak'||p.pct<30);
+  });
+  const ok=subjs.filter(s=>{
+    const p=progress[currentExam]?.[s];
+    return p&&p.status==='ok'&&p.pct>=30&&p.pct<70;
+  });
+  const strong=subjs.filter(s=>{
+    const p=progress[currentExam]?.[s];
+    return p&&p.status==='strong'||p?.pct>=70;
+  });
+  const grid=document.getElementById('weakGrid');
+  if(weak.length===0&&ok.length===0){
+    grid.innerHTML='<span style="font-size:13px;color:#94A3B8">Progress update karo — weak areas automatically detect ho jaayenge!</span>';
+    return;
+  }
+  grid.innerHTML=[
+    ...weak.map(s=>`<span class="weak-chip wc-high">⚠️ ${s}</span>`),
+    ...ok.map(s=>`<span class="weak-chip wc-med">📖 ${s}</span>`),
+    ...strong.map(s=>`<span class="weak-chip wc-ok">✅ ${s}</span>`),
+  ].join('');
+}
+
+function renderOverview(){
+  const subjs=SUBJECTS[currentExam]||[];
+  const allPcts=subjs.map(s=>progress[currentExam]?.[s]?.pct||0);
+  const avg=allPcts.length?Math.round(allPcts.reduce((a,b)=>a+b,0)/allPcts.length):0;
+  const totalHours=logs.filter(l=>l.exam===currentExam).reduce((a,b)=>a+(+b.hours||0),0);
+  const days=[...new Set(logs.filter(l=>l.exam===currentExam).map(l=>l.date))].length;
+  document.getElementById('ovStudied').textContent=days;
+  document.getElementById('ovHours').textContent=totalHours.toFixed(1);
+  document.getElementById('ovReady').textContent=avg+'%';
+  // streak
+  const allDates=[...new Set(logs.map(l=>l.date))].sort().reverse();
+  let streak=0;
+  const ist=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  for(let i=0;i<allDates.length;i++){
+    const d=new Date(allDates[i]);
+    const diff=Math.round((ist-d)/864e5);
+    if(diff===i)streak++;else break;
+  }
+  document.getElementById('ovStreak').textContent=streak;
+}
+
+function renderHeatmap(){
+  const grid=document.getElementById('heatGrid');
+  const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  const start=new Date('2026-01-01');
+  const cells=[];
+  for(let d=new Date(start);d<=now;d.setDate(d.getDate()+1)){
+    const key=d.toISOString().slice(0,10);
+    const hrs=heatData[key]||0;
+    const lvl=hrs===0?0:hrs<2?1:hrs<4?2:hrs<6?3:4;
+    const ds=d.toLocaleDateString('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short'});
+    cells.push(`<div class="heat-cell h${lvl}" title="${ds}: ${hrs}h studied" onclick="toggleHeat('${key}')"></div>`);
+  }
+  grid.innerHTML=cells.join('');
+}
+
+function toggleHeat(key){
+  const cur=heatData[key]||0;
+  heatData[key]=cur>=6?0:cur+2;
+  save();renderHeatmap();renderOverview();
+}
+
+function addLog(){
+  const topic=document.getElementById('logTopic').value.trim();
+  const subj=document.getElementById('logSubj').value;
+  const hours=parseFloat(document.getElementById('logHours').value)||1;
+  if(!topic){alert('Kya padha vo likho!');return;}
+  const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Kolkata'}));
+  const date=now.toISOString().slice(0,10);
+  const entry={id:Date.now(),topic,subj,hours,date,exam:currentExam,
+    display:now.toLocaleDateString('en-IN',{day:'numeric',month:'short'})};
+  logs.unshift(entry);
+  heatData[date]=(heatData[date]||0)+hours;
+  save();
+  document.getElementById('logTopic').value='';
+  document.getElementById('logHours').value='';
+  renderLogList();renderHeatmap();renderOverview();
+}
+
+function renderLogList(){
+  const list=document.getElementById('logList');
+  if(!logs.length){list.innerHTML='<div class="log-empty">Abhi tak koi log nahi — aaj se shuru karo! 📚</div>';return;}
+  list.innerHTML=logs.slice(0,30).map(l=>`
+    <div class="log-row">
+      <span class="log-date">${l.display||l.date.slice(5)}</span>
+      <span class="log-subj">${l.subj}</span>
+      <span class="log-topic">${l.topic}</span>
+      <span class="log-time">${l.hours}h</span>
+      <button class="log-del" onclick="delLog(${l.id})">✕</button>
+    </div>`).join('');
+}
+
+function delLog(id){
+  logs=logs.filter(l=>l.id!==id);
+  save();renderLogList();renderOverview();
+}
+
+let editSubjName='';
+function openModal(subj){
+  editSubjName=subj;
+  const p=progress[currentExam]?.[subj]||{pct:0,status:'not'};
+  document.getElementById('modalSubjName').textContent=subj;
+  document.getElementById('modalSlider').value=p.pct;
+  document.getElementById('modalVal').textContent=p.pct+'%';
+  document.getElementById('modalStatus').value=p.status||'not';
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+function saveProgress(){
+  if(!progress[currentExam])progress[currentExam]={};
+  progress[currentExam][editSubjName]={
+    pct:+document.getElementById('modalSlider').value,
+    status:document.getElementById('modalStatus').value
+  };
+  save();closeModal();renderSubjects();renderWeakAreas();renderOverview();
+}
+
+// Init
+updateCountdown('2025-12-15');
+renderSubjects();renderWeakAreas();renderLogList();renderHeatmap();renderOverview();
+</script>
+</body>
+</html>

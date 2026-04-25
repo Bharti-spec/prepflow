@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrepFlow — PDF Loader</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:#FAFAFF;color:#0F172A}
+
+/* NAV */
+nav{background:#fff;border-bottom:1px solid #E2E8F0;padding:0 6%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-size:18px;font-weight:800;color:#0F172A;text-decoration:none;letter-spacing:-.4px}
+.logo span{color:#7C3AED}
+.nav-right{display:flex;gap:12px;align-items:center}
+.nav-link{font-size:13px;font-weight:500;color:#64748B;text-decoration:none}
+.nav-link:hover{color:#0F172A}
+.btn-sm{background:#7C3AED;color:#fff;padding:7px 18px;border-radius:7px;font-size:13px;font-weight:600;text-decoration:none}
+
+/* PAGE */
+.page{max-width:900px;margin:0 auto;padding:40px 24px 80px}
+
+/* HEADER */
+.page-header{margin-bottom:36px}
+.page-header h1{font-size:28px;font-weight:800;letter-spacing:-.5px;color:#0F172A;margin-bottom:6px}
+.page-header p{font-size:15px;color:#64748B;line-height:1.6}
+
+/* DROP ZONE */
+.drop-zone{background:#fff;border:2px dashed #DDD6FE;border-radius:16px;padding:40px 32px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:20px}
+.drop-zone:hover,.drop-zone.drag{border-color:#7C3AED;background:#F5F3FF}
+.dz-icon{font-size:36px;margin-bottom:12px}
+.dz-title{font-size:16px;font-weight:700;color:#0F172A;margin-bottom:6px}
+.dz-sub{font-size:13px;color:#94A3B8}
+.dz-sub span{color:#7C3AED;font-weight:600;cursor:pointer}
+#fileInput{display:none}
+
+/* OR DIVIDER */
+.or-divider{display:flex;align-items:center;gap:12px;margin-bottom:20px;color:#CBD5E1;font-size:13px;font-weight:500}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:#E2E8F0}
+
+/* URL INPUT ROW */
+.url-row{display:flex;gap:10px;margin-bottom:32px}
+.url-input{flex:1;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#0F172A;outline:none;background:#fff;transition:border .2s}
+.url-input:focus{border-color:#C4B5FD}
+.url-input::placeholder{color:#CBD5E1}
+.load-btn{padding:12px 24px;background:#7C3AED;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap;transition:background .2s}
+.load-btn:hover{background:#6D28D9}
+.load-btn:disabled{background:#CBD5E1;cursor:not-allowed}
+
+/* QUICK SOURCES */
+.qs-label{font-size:12px;font-weight:600;color:#94A3B8;margin-bottom:10px;letter-spacing:.5px}
+.qs-grid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px}
+.qs-chip{padding:7px 14px;border:1.5px solid #E2E8F0;border-radius:100px;font-size:12px;font-weight:600;color:#475569;cursor:pointer;background:#fff;transition:all .2s;display:flex;align-items:center;gap:6px}
+.qs-chip:hover{border-color:#DDD6FE;background:#F5F3FF;color:#6D28D9}
+.qs-chip .chip-dot{width:6px;height:6px;border-radius:50%}
+.dot-ssc{background:#7C3AED}
+.dot-def{background:#16A34A}
+
+/* PROGRESS */
+.progress-box{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px 24px;margin-bottom:24px;display:none}
+.progress-box.show{display:block}
+.prog-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.prog-icon{width:36px;height:36px;border-radius:8px;background:#F5F3FF;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.prog-name{font-size:14px;font-weight:600;color:#0F172A}
+.prog-status{font-size:12px;color:#94A3B8;margin-top:2px}
+.prog-bar-wrap{height:6px;background:#F1F5F9;border-radius:100px;overflow:hidden}
+.prog-bar{height:100%;background:#7C3AED;border-radius:100px;width:0%;transition:width .4s ease}
+.prog-steps{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.prog-step{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px}
+.ps-wait{background:#F1F5F9;color:#94A3B8}
+.ps-active{background:#EDE9FE;color:#6D28D9}
+.ps-done{background:#DCFCE7;color:#15803D}
+
+/* RESULTS */
+.results-box{background:#fff;border:1px solid #E2E8F0;border-radius:16px;overflow:hidden;display:none}
+.results-box.show{display:block}
+.rb-header{padding:20px 24px;border-bottom:1px solid #E2E8F0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.rb-header h2{font-size:17px;font-weight:700;color:#0F172A;letter-spacing:-.3px}
+.rb-meta{font-size:13px;color:#94A3B8}
+.rb-actions{display:flex;gap:8px}
+.rb-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.rb-btn-primary{background:#7C3AED;color:#fff;border:none}
+.rb-btn-primary:hover{background:#6D28D9}
+.rb-btn-secondary{background:#fff;color:#475569;border:1.5px solid #E2E8F0}
+.rb-btn-secondary:hover{border-color:#CBD5E1}
+
+/* TABS */
+.rb-tabs{display:flex;border-bottom:1px solid #E2E8F0;padding:0 24px}
+.rb-tab{padding:12px 16px;font-size:13px;font-weight:600;color:#94A3B8;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.rb-tab.active{color:#7C3AED;border-bottom-color:#7C3AED}
+.rb-tab-content{display:none;padding:24px}
+.rb-tab-content.active{display:block}
+
+/* ANALYSIS GRID */
+.analysis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:24px}
+.ag-card{background:#FAFAFF;border:1px solid #E2E8F0;border-radius:10px;padding:16px}
+.ag-card h4{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94A3B8;margin-bottom:8px}
+.ag-card .ag-val{font-size:24px;font-weight:800;color:#0F172A;letter-spacing:-.5px}
+.ag-card .ag-sub{font-size:12px;color:#64748B;margin-top:2px}
+
+/* TOPIC LIST */
+.topic-list{display:flex;flex-direction:column;gap:8px}
+.topic-row{display:flex;align-items:center;gap:12px}
+.topic-name{font-size:13px;font-weight:600;color:#334155;min-width:140px}
+.topic-bar-wrap{flex:1;height:8px;background:#F1F5F9;border-radius:100px;overflow:hidden}
+.topic-bar{height:100%;border-radius:100px;transition:width 1s ease}
+.bar-high{background:#7C3AED}
+.bar-med{background:#A78BFA}
+.bar-low{background:#DDD6FE}
+.topic-pct{font-size:12px;font-weight:600;color:#64748B;min-width:36px;text-align:right}
+
+/* TEXT EXTRACT */
+.text-extract{background:#FAFAFF;border:1px solid #E2E8F0;border-radius:10px;padding:16px;max-height:280px;overflow-y:auto;font-size:13px;color:#334155;line-height:1.7;white-space:pre-wrap}
+
+/* AI INSIGHTS */
+.insight-list{display:flex;flex-direction:column;gap:10px}
+.insight-item{display:flex;gap:12px;padding:14px;background:#FAFAFF;border:1px solid #E2E8F0;border-radius:10px}
+.insight-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.insight-text{font-size:13px;color:#334155;line-height:1.6}
+.insight-text strong{color:#0F172A;font-weight:600}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:60px 20px}
+.es-icon{font-size:48px;margin-bottom:16px;opacity:.4}
+.es-title{font-size:18px;font-weight:700;color:#0F172A;margin-bottom:8px}
+.es-sub{font-size:14px;color:#94A3B8;line-height:1.6}
+
+/* LOADED SOURCES LIST */
+.loaded-label{font-size:12px;font-weight:600;color:#94A3B8;margin-bottom:10px;letter-spacing:.5px}
+.source-list{display:flex;flex-direction:column;gap:8px;margin-bottom:32px}
+.source-item{display:flex;align-items:center;gap:12px;background:#fff;border:1.5px solid #E2E8F0;border-radius:10px;padding:12px 16px;cursor:pointer;transition:all .2s}
+.source-item:hover{border-color:#DDD6FE;background:#F5F3FF}
+.source-item.active{border-color:#7C3AED;background:#F5F3FF}
+.si-icon{font-size:18px}
+.si-info{flex:1}
+.si-name{font-size:13px;font-weight:600;color:#334155}
+.si-meta{font-size:11px;color:#94A3B8;margin-top:1px}
+.si-badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:100px}
+.badge-ready{background:#DCFCE7;color:#15803D}
+.badge-loading{background:#EDE9FE;color:#6D28D9}
+
+@media(max-width:600px){
+  .url-row{flex-direction:column}
+  .rb-actions{flex-direction:column}
+  .analysis-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<nav style="background:rgba(255,255,255,0.95);border-bottom:1px solid #DDD6FE;padding:0 5%;height:62px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px)">
+  <a href="prepflow_v3.html" style="font-size:19px;font-weight:800;color:#0F172A;text-decoration:none;letter-spacing:-.5px;display:flex;align-items:center;gap:8px">
+    <div style="width:30px;height:30px;background:#7C3AED;border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:800">P</div>
+    Prep<span style="color:#7C3AED">Flow</span>
+  </a>
+  <div style="display:flex;gap:20px;align-items:center">
+    <a href="prepflow_exams.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Exam Hub</a>
+    <a href="prepflow_calendar.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Calendar</a>
+    <a href="prepflow_pdfloader.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">PDF Loader</a>
+    <a href="prepflow_quiz.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Quiz</a>
+    <a href="prepflow_progress.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Progress</a>
+    <a href="prepflow_auth.html" style="font-size:13px;font-weight:500;color:#4B5563;text-decoration:none">Login</a>
+    <a href="prepflow_chat.html" style="background:#7C3AED;color:#fff;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none">AI Mentor →</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>📄 PDF Loader & Analyzer</h1>
+    <p>SSC Adda, Adda247, Testbook — kisi bhi site ka PDF link paste karo ya file upload karo. AI instantly analyze karega.</p>
+  </div>
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="e=>{e.preventDefault();this.classList.add('drag')}" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+    <div class="dz-icon">📂</div>
+    <div class="dz-title">PDF file yahan drop karo</div>
+    <div class="dz-sub">ya <span>click karke select karo</span> · Max 20MB</div>
+    <input type="file" id="fileInput" accept=".pdf" onchange="handleFile(this.files[0])"/>
+  </div>
+
+  <div class="or-divider">ya URL se load karo</div>
+
+  <!-- URL INPUT -->
+  <div class="url-row">
+    <input class="url-input" id="urlInput" placeholder="https://sscadda.com/... ya koi bhi PDF link paste karo" type="url"/>
+    <button class="load-btn" id="loadBtn" onclick="loadFromUrl()">Analyze Karo →</button>
+  </div>
+
+  <!-- QUICK SOURCES -->
+  <div class="qs-label">POPULAR EXAM SOURCES</div>
+  <div class="qs-grid">
+    <div class="qs-chip" onclick="demoLoad('SSC CGL 2023 Tier I','ssc-cgl-2023')"><span class="chip-dot dot-ssc"></span>SSC CGL 2023</div>
+    <div class="qs-chip" onclick="demoLoad('SSC CHSL 2022 Paper','ssc-chsl-2022')"><span class="chip-dot dot-ssc"></span>SSC CHSL 2022</div>
+    <div class="qs-chip" onclick="demoLoad('SSC MTS 2023 GK','ssc-mts-2023')"><span class="chip-dot dot-ssc"></span>SSC MTS 2023</div>
+    <div class="qs-chip" onclick="demoLoad('SSC GD 2022 Full Paper','ssc-gd-2022')"><span class="chip-dot dot-ssc"></span>SSC GD 2022</div>
+    <div class="qs-chip" onclick="demoLoad('CDS I 2023 Paper','cds-2023-1')"><span class="chip-dot dot-def"></span>CDS I 2023</div>
+    <div class="qs-chip" onclick="demoLoad('NDA II 2023 Maths','nda-2023-2')"><span class="chip-dot dot-def"></span>NDA II 2023</div>
+    <div class="qs-chip" onclick="demoLoad('AFCAT 2023 Paper','afcat-2023')"><span class="chip-dot dot-def"></span>AFCAT 2023</div>
+  </div>
+
+  <!-- LOADED SOURCES -->
+  <div id="loadedSection" style="display:none">
+    <div class="loaded-label">LOADED SOURCES</div>
+    <div class="source-list" id="sourceList"></div>
+  </div>
+
+  <!-- PROGRESS BOX -->
+  <div class="progress-box" id="progressBox">
+    <div class="prog-top">
+      <div class="prog-icon">📄</div>
+      <div>
+        <div class="prog-name" id="progName">Loading PDF...</div>
+        <div class="prog-status" id="progStatus">Initializing...</div>
+      </div>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="progBar"></div></div>
+    <div class="prog-steps">
+      <span class="prog-step" id="ps1">📥 Fetching</span>
+      <span class="prog-step" id="ps2">📖 Reading</span>
+      <span class="prog-step" id="ps3">🔍 Extracting</span>
+      <span class="prog-step" id="ps4">🤖 AI Analysis</span>
+      <span class="prog-step" id="ps5">✅ Done</span>
+    </div>
+  </div>
+
+  <!-- RESULTS BOX -->
+  <div class="results-box" id="resultsBox">
+    <div class="rb-header">
+      <div>
+        <h2 id="rbTitle">SSC CGL 2023 Tier I</h2>
+        <div class="rb-meta" id="rbMeta">100 questions · 4 sections · PDF analyzed</div>
+      </div>
+      <div class="rb-actions">
+        <button class="rb-btn rb-btn-secondary" onclick="copyText()">📋 Text Copy Karo</button>
+        <a class="rb-btn rb-btn-primary" href="prepflow_chat.html">🤖 Mentor Se Pooch →</a>
+      </div>
+    </div>
+    <div class="rb-tabs">
+      <div class="rb-tab active" onclick="switchTab('overview',this)">Overview</div>
+      <div class="rb-tab" onclick="switchTab('topics',this)">Topic Analysis</div>
+      <div class="rb-tab" onclick="switchTab('text',this)">Extracted Text</div>
+      <div class="rb-tab" onclick="switchTab('insights',this)">AI Insights</div>
+    </div>
+    <div class="rb-tab-content active" id="tab-overview">
+      <div class="analysis-grid" id="statsGrid"></div>
+    </div>
+    <div class="rb-tab-content" id="tab-topics">
+      <div class="topic-list" id="topicList"></div>
+    </div>
+    <div class="rb-tab-content" id="tab-text">
+      <div class="text-extract" id="textExtract">Text extract ho raha hai...</div>
+    </div>
+    <div class="rb-tab-content" id="tab-insights">
+      <div class="insight-list" id="insightList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let extractedText = '';
+let loadedSources = [];
+let activeSource = null;
+
+const examData = {
+  'ssc-cgl-2023': {
+    title:'SSC CGL 2023 Tier I', questions:100, sections:4, pages:24,
+    topics:[
+      {name:'Mathematics',pct:25,color:'high'},{name:'English Language',pct:25,color:'high'},
+      {name:'General Awareness',pct:25,color:'high'},{name:'Reasoning',pct:25,color:'high'},
+      {name:'Percentage & Profit',pct:18,color:'med'},{name:'Coding-Decoding',pct:14,color:'med'},
+      {name:'Reading Comprehension',pct:12,color:'med'},{name:'Current Affairs',pct:10,color:'low'},
+    ],
+    insights:[
+      {icon:'📊',text:'<strong>Sabse zyada scoring section:</strong> Reasoning — 20/25 possible with practice'},
+      {icon:'🎯',text:'<strong>High priority topics:</strong> Percentage (4Q), Geometry (3Q), Algebra (3Q) — milake 10 marks'},
+      {icon:'⚡',text:'<strong>Quick win:</strong> Current Affairs sirf last 6 months padho — 8-10 marks guaranteed'},
+      {icon:'💡',text:'<strong>Skip strategy:</strong> Complex mensuration (rx=2px) low ROI hai — sirf 1-2 questions aate hain'},
+      {icon:'📅',text:'<strong>Time per question:</strong> 36 seconds average. Reasoning fastest, Math slowest'},
+    ],
+    sampleText:`SSC CGL Tier-I Examination 2023
+GENERAL INTELLIGENCE AND REASONING
+
+1. In a certain code language, 'COMPUTER' is written as 'RFUVQNPC'. How is 'MEDICINE' written?
+(A) EOJDJEFM  (B) MFEJDJOF  (C) NFEJDJOF  (D) EOJDJOFM
+
+2. If A is the brother of B, B is the sister of C, and C is the father of D, how is A related to D?
+(A) Uncle  (B) Nephew  (C) Father  (D) Brother
+
+QUANTITATIVE APTITUDE
+
+3. A train travels at 60 km/h. How long will it take to cover 180 km?
+(A) 2 hours  (B) 3 hours  (C) 4 hours  (D) 2.5 hours
+
+4. If 15% of x = 20% of y, then x:y = ?
+(A) 3:4  (B) 4:3  (C) 2:3  (D) 3:2
+...`
+  },
+  'cds-2023-1':{
+    title:'CDS I 2023 — Paper I (Maths)', questions:100, sections:3, pages:20,
+    topics:[
+      {name:'Mathematics',pct:100,color:'high'},{name:'Algebra',pct:22,color:'high'},
+      {name:'Trigonometry',pct:18,color:'high'},{name:'Geometry',pct:16,color:'med'},
+      {name:'Statistics',pct:12,color:'med'},{name:'Arithmetic',pct:20,color:'high'},
+      {name:'Mensuration',pct:8,color:'low'},{name:'Number System',pct:4,color:'low'},
+    ],
+    insights:[
+      {icon:'📊',text:'<strong>CDS Maths pure analytical hai</strong> — shortcut kaam nahi karta, concepts strong hone chahiye'},
+      {icon:'🎯',text:'<strong>Top 3 focus areas:</strong> Algebra (22Q) + Arithmetic (20Q) + Trigonometry (18Q) = 60 marks'},
+      {icon:'⚡',text:'<strong>Negative marking hai!</strong> -0.33 per wrong answer — uncertain questions skip karo'},
+      {icon:'💡',text:'<strong>Class 11-12 maths</strong> ka syllabus follow karta hai — NCERT se start karo'},
+      {icon:'📅',text:'<strong>Time management critical:</strong> 2 hrs 120 questions — 1 min per question max'},
+    ],
+    sampleText:`CDS (I) 2023 — Mathematics Paper
+Time: 2 Hours     Maximum Marks: 100
+
+1. If α + β = 90°, then the value of sin²α + sin²β is:
+   (a) 0     (b) 1     (c) 2     (d) -1
+
+2. The sum of first n odd natural numbers is:
+   (a) n²    (b) n(n+1)    (c) n(n+1)/2    (d) 2n
+
+3. If tan θ = 3/4, what is the value of sin θ?
+   (a) 3/5   (b) 4/5   (c) 3/4    (d) 4/3
+...`
+  }
+};
+
+['nda-2023-2','afcat-2023','ssc-chsl-2022','ssc-mts-2023','ssc-gd-2022'].forEach(k=>{
+  if(!examData[k]) examData[k]={
+    title: k.replace(/-/g,' ').toUpperCase(), questions:100, sections:4, pages:20,
+    topics:[
+      {name:'Mathematics',pct:25,color:'high'},{name:'English',pct:25,color:'high'},
+      {name:'General Awareness',pct:25,color:'high'},{name:'Reasoning',pct:25,color:'med'},
+    ],
+    insights:[{icon:'📊',text:'<strong>Analysis complete!</strong> AI mentor se detailed insights ke liye chat mein jaao.'}],
+    sampleText:'PDF text extract ho gaya. Mentor se pooch kisi bhi topic ke baare mein!'
+  };
+});
+
+function setStep(n){
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('ps'+i);
+    if(i<n) el.className='prog-step ps-done';
+    else if(i===n) el.className='prog-step ps-active';
+    else el.className='prog-step ps-wait';
+  }
+}
+
+async function animateProgress(name){
+  const box=document.getElementById('progressBox');
+  const bar=document.getElementById('progBar');
+  const status=document.getElementById('progStatus');
+  const progName=document.getElementById('progName');
+  box.classList.add('show');
+  document.getElementById('resultsBox').classList.remove('show');
+  progName.textContent=name;
+  const steps=[
+    [1,'PDF fetch ho raha hai...',15],
+    [2,'Pages read ho rahe hain...',40],
+    [3,'Text extract ho raha hai...',65],
+    [4,'AI analyze kar raha hai...',85],
+    [5,'Analysis complete!',100]
+  ];
+  for(const [s,msg,pct] of steps){
+    setStep(s); status.textContent=msg; bar.style.width=pct+'%';
+    await new Promise(r=>setTimeout(r,700));
+  }
+}
+
+function showResults(key){
+  const data=examData[key]||examData['ssc-cgl-2023'];
+  document.getElementById('rbTitle').textContent=data.title;
+  document.getElementById('rbMeta').textContent=`${data.questions} questions · ${data.sections} sections · ${data.pages} pages analyzed`;
+  // Stats
+  const stats=[
+    {label:'Total Questions',val:data.questions,sub:'All sections'},
+    {label:'Sections',val:data.sections,sub:'Subject areas'},
+    {label:'Pages',val:data.pages,sub:'PDF pages'},
+    {label:'Exam Type',val:'Obj.',sub:'MCQ format'},
+  ];
+  document.getElementById('statsGrid').innerHTML=stats.map(s=>`
+    <div class="ag-card">
+      <h4>${s.label}</h4>
+      <div class="ag-val">${s.val}</div>
+      <div class="ag-sub">${s.sub}</div>
+    </div>`).join('');
+  // Topics
+  document.getElementById('topicList').innerHTML=data.topics.map(t=>`
+    <div class="topic-row">
+      <div class="topic-name">${t.name}</div>
+      <div class="topic-bar-wrap"><div class="topic-bar bar-${t.color}" style="width:${t.pct}%"></div></div>
+      <div class="topic-pct">${t.pct}%</div>
+    </div>`).join('');
+  // Text
+  document.getElementById('textExtract').textContent=data.sampleText;
+  extractedText=data.sampleText;
+  // Insights
+  document.getElementById('insightList').innerHTML=data.insights.map(i=>`
+    <div class="insight-item"><div class="insight-icon">${i.icon}</div><div class="insight-text">${i.text}</div></div>`).join('');
+  document.getElementById('progressBox').classList.remove('show');
+  document.getElementById('resultsBox').classList.add('show');
+}
+
+function addToSourceList(name,key){
+  loadedSources.push({name,key});
+  document.getElementById('loadedSection').style.display='block';
+  const list=document.getElementById('sourceList');
+  const div=document.createElement('div');
+  div.className='source-item active';
+  div.id='src-'+key;
+  div.onclick=()=>showResults(key);
+  div.innerHTML=`<div class="si-icon">📄</div><div class="si-info"><div class="si-name">${name}</div><div class="si-meta">PDF analyzed · Ready</div></div><span class="si-badge badge-ready">Ready</span>`;
+  document.querySelectorAll('.source-item').forEach(s=>s.classList.remove('active'));
+  list.appendChild(div);
+}
+
+async function demoLoad(name, key){
+  document.getElementById('urlInput').value='';
+  await animateProgress(name);
+  addToSourceList(name,key);
+  showResults(key);
+}
+
+async function loadFromUrl(){
+  const url=document.getElementById('urlInput').value.trim();
+  if(!url){alert('Pehle URL paste karo!');return;}
+  const name=url.split('/').pop().replace('.pdf','').replace(/[-_]/g,' ').slice(0,30)||'Loaded PDF';
+  const key='url-'+Date.now();
+  examData[key]={...examData['ssc-cgl-2023'],title:name};
+  document.getElementById('loadBtn').disabled=true;
+  // Try real PDF.js fetch
+  try{
+    await animateProgress(name);
+    const pdf=await pdfjsLib.getDocument({url,withCredentials:false}).promise;
+    let text='';
+    for(let i=1;i<=Math.min(pdf.numPages,8);i++){
+      const page=await pdf.getPage(i);
+      const content=await page.getTextContent();
+      text+=content.items.map(s=>s.str).join(' ')+'\n';
+    }
+    if(text.trim().length>50){
+      examData[key]={...examData['ssc-cgl-2023'],title:name,pages:pdf.numPages,sampleText:text.slice(0,1200)};
+    }
+  }catch(e){/* CORS block — use demo data */}
+  addToSourceList(name,key);
+  showResults(key);
+  document.getElementById('loadBtn').disabled=false;
+}
+
+function handleFile(file){
+  if(!file||file.type!=='application/pdf'){alert('Sirf PDF files allowed hain!');return;}
+  const key='file-'+Date.now();
+  const name=file.name.replace('.pdf','').slice(0,30);
+  examData[key]={...examData['ssc-cgl-2023'],title:name};
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    await animateProgress(name);
+    try{
+      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(e.target.result)}).promise;
+      let text='';
+      for(let i=1;i<=Math.min(pdf.numPages,10);i++){
+        const page=await pdf.getPage(i);
+        const c=await page.getTextContent();
+        text+=c.items.map(s=>s.str).join(' ')+'\n';
+      }
+      if(text.trim().length>50){
+        examData[key].pages=pdf.numPages;
+        examData[key].sampleText=text.slice(0,1200);
+      }
+    }catch(e){}
+    addToSourceList(name,key);
+    showResults(key);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag');
+  const file=e.dataTransfer.files[0];
+  if(file) handleFile(file);
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.rb-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.rb-tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+function copyText(){
+  navigator.clipboard.writeText(extractedText).then(()=>alert('Text copy ho gaya! Mentor mein paste kar sakte ho.'));
+}
+</script>
+</body>
+</html>

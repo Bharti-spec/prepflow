@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PrepFlow — Exam Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'DM Sans',sans-serif;background:#F8FAFC;color:#0F172A}
+nav{background:#fff;border-bottom:1px solid #E2E8F0;padding:0 5%;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-size:18px;font-weight:800;color:#0F172A;text-decoration:none}
+.logo span{color:#2563EB}
+.nav-right{display:flex;gap:16px;align-items:center}
+.nav-right a{font-size:13px;font-weight:500;color:#64748B;text-decoration:none}
+.nav-right a:hover{color:#0F172A}
+.nav-right a.active{color:#2563EB;font-weight:600}
+.btn-nav{background:#2563EB;color:#fff!important;padding:7px 18px;border-radius:7px;font-size:13px;font-weight:600!important}
+
+.page{display:flex;min-height:calc(100vh - 60px)}
+
+/* SIDEBAR */
+.exam-sidebar{width:220px;min-width:220px;border-right:1px solid #E2E8F0;background:#fff;padding:16px 0;position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto}
+.sb-section{padding:6px 16px;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#CBD5E1;margin-top:8px}
+.exam-tab{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-left:3px solid transparent;transition:all .15s;margin:1px 0}
+.exam-tab:hover{background:#F8FAFC;border-left-color:#BFDBFE}
+.exam-tab.active{background:#EFF6FF;border-left-color:#2563EB}
+.exam-tab .et-icon{font-size:16px;width:24px;text-align:center}
+.exam-tab .et-info{flex:1}
+.exam-tab .et-name{font-size:13px;font-weight:600;color:#334155}
+.exam-tab .et-sub{font-size:11px;color:#94A3B8}
+.exam-tab.active .et-name{color:#1D4ED8}
+.priority-dot{width:6px;height:6px;border-radius:50%;background:#2563EB;flex-shrink:0}
+
+/* MAIN CONTENT */
+.exam-main{flex:1;padding:32px 36px;max-width:860px}
+.exam-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap}
+.exam-title-row{display:flex;align-items:center;gap:12px}
+.exam-icon-big{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.ei-ssc{background:#DBEAFE}
+.ei-def{background:#DCFCE7}
+.exam-header h1{font-size:24px;font-weight:800;letter-spacing:-.5px;color:#0F172A}
+.exam-header p{font-size:14px;color:#64748B;margin-top:3px}
+.header-badges{display:flex;gap:8px;flex-wrap:wrap}
+.hbadge{font-size:12px;font-weight:600;padding:4px 12px;border-radius:100px;border:1.5px solid}
+.hb-blue{background:#EFF6FF;border-color:#BFDBFE;color:#1D4ED8}
+.hb-green{background:#F0FDF4;border-color:#BBF7D0;color:#15803D}
+.hb-amber{background:#FFFBEB;border-color:#FDE68A;color:#92400E}
+
+/* INFO TABS */
+.info-tabs{display:flex;gap:0;border-bottom:1px solid #E2E8F0;margin-bottom:24px;overflow-x:auto}
+.info-tab{padding:10px 18px;font-size:13px;font-weight:600;color:#94A3B8;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s}
+.info-tab:hover{color:#475569}
+.info-tab.active{color:#2563EB;border-bottom-color:#2563EB}
+
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* OVERVIEW CARDS */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.ov-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:16px}
+.ov-card h4{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#94A3B8;margin-bottom:8px}
+.ov-val{font-size:20px;font-weight:800;color:#0F172A;letter-spacing:-.3px}
+.ov-sub{font-size:12px;color:#64748B;margin-top:3px}
+
+/* SECTIONS TABLE */
+.section-table{background:#fff;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;margin-bottom:20px}
+.st-header{display:grid;padding:12px 16px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94A3B8}
+.st-row{display:grid;padding:14px 16px;border-bottom:1px solid #F1F5F9;align-items:center;transition:background .15s}
+.st-row:last-child{border-bottom:none}
+.st-row:hover{background:#F8FAFC}
+.st-row .subj{font-size:14px;font-weight:600;color:#334155}
+.st-row .qs{font-size:14px;color:#64748B}
+.st-row .marks{font-size:14px;font-weight:700;color:#0F172A}
+.st-row .time{font-size:13px;color:#94A3B8}
+.importance-bar{height:6px;border-radius:100px;background:#E2E8F0;overflow:hidden;width:80px}
+.ib-fill{height:100%;border-radius:100px;background:#2563EB}
+
+/* SYLLABUS */
+.syllabus-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.syl-card{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px}
+.syl-card h3{font-size:14px;font-weight:700;color:#0F172A;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.topic-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #F1F5F9}
+.topic-item:last-child{border-bottom:none}
+.ti-name{font-size:13px;color:#334155;font-weight:500}
+.ti-weight{font-size:11px;font-weight:700;padding:2px 8px;border-radius:100px}
+.tw-high{background:#DBEAFE;color:#1D4ED8}
+.tw-med{background:#F3E8FF;color:#7C3AED}
+.tw-low{background:#F1F5F9;color:#64748B}
+
+/* STRATEGY */
+.strategy-list{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.strat-item{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:18px;display:flex;gap:14px}
+.strat-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.strat-body h4{font-size:14px;font-weight:700;color:#0F172A;margin-bottom:5px}
+.strat-body p{font-size:13px;color:#64748B;line-height:1.65}
+.strat-body .tag{display:inline-block;font-size:11px;font-weight:600;background:#EFF6FF;color:#1D4ED8;padding:2px 8px;border-radius:100px;margin-top:6px}
+
+/* PYQ TABLE */
+.pyq-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.pyq-row{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;transition:all .2s;cursor:pointer}
+.pyq-row:hover{border-color:#BFDBFE;background:#EFF6FF}
+.pyq-year{font-size:13px;font-weight:800;color:#1D4ED8;min-width:48px}
+.pyq-info{flex:1}
+.pyq-name{font-size:13px;font-weight:600;color:#334155}
+.pyq-meta{font-size:11px;color:#94A3B8;margin-top:2px}
+.pyq-btn{font-size:12px;font-weight:600;color:#2563EB;background:#EFF6FF;border:1px solid #BFDBFE;border-radius:6px;padding:5px 12px;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.pyq-btn:hover{background:#DBEAFE}
+
+/* YOUTUBE */
+.yt-section{margin-bottom:20px}
+.yt-url-row{display:flex;gap:10px;margin-bottom:16px}
+.yt-input{flex:1;padding:11px 16px;border:1.5px solid #E2E8F0;border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;color:#0F172A;outline:none;transition:border .2s}
+.yt-input:focus{border-color:#93C5FD}
+.yt-input::placeholder{color:#CBD5E1}
+.yt-btn{padding:11px 22px;background:#FF0000;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.yt-btn:hover{background:#CC0000}
+.yt-channels-label{font-size:12px;font-weight:700;color:#94A3B8;letter-spacing:.5px;margin-bottom:10px}
+.yt-channels{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.yt-channel{background:#fff;border:1px solid #E2E8F0;border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;transition:all .2s}
+.yt-channel:hover{border-color:#E2E8F0;background:#FAFAFA}
+.yc-avatar{width:40px;height:40px;border-radius:50%;background:#FF0000;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;font-weight:700;flex-shrink:0}
+.yc-info{flex:1}
+.yc-name{font-size:14px;font-weight:700;color:#0F172A}
+.yc-sub{font-size:12px;color:#94A3B8;margin-top:2px}
+.yc-tags{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.yc-tag{font-size:11px;font-weight:600;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:100px;padding:2px 8px;color:#64748B}
+.yt-result{background:#fff;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin-bottom:16px;display:none}
+.yt-result.show{display:block}
+.yt-result h3{font-size:15px;font-weight:700;color:#0F172A;margin-bottom:8px}
+.yt-result p{font-size:13px;color:#64748B;line-height:1.6;margin-bottom:12px}
+.yt-transcript{background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;padding:14px;font-size:13px;color:#334155;line-height:1.7;max-height:200px;overflow-y:auto;white-space:pre-wrap}
+.yt-actions{display:flex;gap:8px;margin-top:12px}
+.yt-action-btn{padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;border:1.5px solid #E2E8F0;background:#fff;color:#475569;transition:all .2s}
+.yt-action-btn:hover{border-color:#BFDBFE;background:#EFF6FF;color:#1D4ED8}
+.yt-action-btn.primary{background:#2563EB;color:#fff;border-color:#2563EB}
+
+/* CUTOFF */
+.cutoff-table{background:#fff;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden}
+.ct-head{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:11px 16px;background:#F8FAFC;border-bottom:1px solid #E2E8F0;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94A3B8}
+.ct-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:13px 16px;border-bottom:1px solid #F1F5F9;align-items:center}
+.ct-row:last-child{border-bottom:none}
+.ct-row:hover{background:#F8FAFC}
+.ct-row span{font-size:13px;color:#334155}
+.ct-row .year{font-weight:700;color:#0F172A}
+.ct-row .score{font-weight:700;color:#1D4ED8}
+
+@media(max-width:768px){
+  .exam-sidebar{display:none}
+  .exam-main{padding:20px 16px}
+  .syllabus-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a class="logo" href="prepflow_v3.html">Prep<span>Flow</span></a>
+  <div class="nav-right">
+    <a href="prepflow_exams.html" class="active">Exam Hub</a>
+    <a href="prepflow_pdfloader.html">PDF Loader</a>
+    <a href="prepflow_quiz.html">Quiz</a>
+    <a href="prepflow_chat.html" class="btn-nav">AI Mentor →</a>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="exam-sidebar">
+    <div class="sb-section">SSC — Priority</div>
+    <div class="exam-tab active" onclick="loadExam('cgl',this)"><span class="et-icon">📋</span><div class="et-info"><div class="et-name">SSC CGL</div><div class="et-sub">Graduate Level</div></div><span class="priority-dot"></span></div>
+    <div class="exam-tab" onclick="loadExam('chsl',this)"><span class="et-icon">📄</span><div class="et-info"><div class="et-name">SSC CHSL</div><div class="et-sub">Higher Secondary</div></div><span class="priority-dot"></span></div>
+    <div class="exam-tab" onclick="loadExam('mts',this)"><span class="et-icon">📝</span><div class="et-info"><div class="et-name">SSC MTS</div><div class="et-sub">Multi Tasking</div></div></div>
+    <div class="exam-tab" onclick="loadExam('gd',this)"><span class="et-icon">🛡️</span><div class="et-info"><div class="et-name">SSC GD</div><div class="et-sub">GD Constable</div></div></div>
+    <div class="sb-section">Defence — Priority</div>
+    <div class="exam-tab" onclick="loadExam('cds',this)"><span class="et-icon">⚔️</span><div class="et-info"><div class="et-name">CDS</div><div class="et-sub">Combined Defence</div></div><span class="priority-dot"></span></div>
+    <div class="exam-tab" onclick="loadExam('nda',this)"><span class="et-icon">🎖️</span><div class="et-info"><div class="et-name">NDA</div><div class="et-sub">National Defence</div></div></div>
+    <div class="exam-tab" onclick="loadExam('afcat',this)"><span class="et-icon">✈️</span><div class="et-info"><div class="et-name">AFCAT</div><div class="et-sub">Air Force</div></div></div>
+  </div>
+
+  <div class="exam-main" id="examMain">
+    <!-- Content loads here -->
+  </div>
+</div>
+
+<script>
+const EXAMS = {
+  cgl:{
+    name:'SSC CGL 2024-25',icon:'📋',iconClass:'ei-ssc',type:'SSC',
+    sub:'Combined Graduate Level Examination',
+    badges:[{t:'Group B & C Posts',c:'hb-blue'},{t:'Graduation Required',c:'hb-green'},{t:'4 Tiers',c:'hb-amber'}],
+    overview:[
+      {label:'Total Vacancies',val:'17,727',sub:'2024 cycle'},
+      {label:'Application Fee',val:'₹100',sub:'Gen/OBC | SC/ST free'},
+      {label:'Age Limit',val:'18–32',sub:'Years (relaxation extra)'},
+      {label:'Exam Mode',val:'CBT',sub:'Computer Based Test'},
+      {label:'Negative Mark',val:'-0.50',sub:'Per wrong answer'},
+      {label:'Total Marks',val:'700',sub:'Tier I + II combined'},
+    ],
+    sections:[
+      {subj:'General Intelligence & Reasoning',qs:25,marks:50,time:'—',imp:80},
+      {subj:'General Awareness',qs:25,marks:50,time:'—',imp:90},
+      {subj:'Quantitative Aptitude',qs:25,marks:50,time:'—',imp:95},
+      {subj:'English Comprehension',qs:25,marks:50,time:'—',imp:85},
+    ],
+    totalQs:100,totalMarks:200,totalTime:'60 min',
+    syllabus:{
+      'Maths':[
+        {t:'Percentage & Profit/Loss',w:'high'},{t:'Time Speed Distance',w:'high'},
+        {t:'Algebra',w:'high'},{t:'Geometry',w:'med'},
+        {t:'Number System',w:'med'},{t:'Data Interpretation',w:'med'},
+        {t:'Trigonometry',w:'low'},{t:'Statistics',w:'low'},
+      ],
+      'History & Polity':[
+        {t:'Indian History',w:'high'},{t:'Freedom Movement',w:'high'},
+        {t:'Indian Constitution',w:'med'},{t:'Polity & Governance',w:'med'},
+        {t:'Medieval History',w:'low'},{t:'Ancient History',w:'low'},
+      ],
+      'Geography & Economics':[
+        {t:'Indian Geography',w:'high'},{t:'World Geography',w:'med'},
+        {t:'Economics Basics',w:'med'},{t:'Climate & Environment',w:'low'},
+      ],
+      'English':[
+        {t:'Reading Comprehension',w:'high'},{t:'Error Detection',w:'high'},
+        {t:'Fill in the Blanks',w:'med'},{t:'Synonyms/Antonyms',w:'med'},
+        {t:'Cloze Test',w:'med'},{t:'Idioms & Phrases',w:'low'},
+      ]
+    },
+    strategy:[
+      {icon:'🎯',title:'Pehle Tier I qualify karo',text:'Tier I sirf qualifying hai — cutoff cross karna zaroori hai. 130-140+ marks target rakho. Isme zyada time mat lagao, Tier II pe focus karo.',tag:'Priority: Tier II'},
+      {icon:'📐',title:'Math sabse zyada scoring',text:'Tier II mein 200 marks sirf Maths ke hain. Roz 30-40 questions practice karo. Percentage, P&L, Algebra — yeh teen topics akele 60+ marks denge.',tag:'Daily 2 hrs Math'},
+      {icon:'📖',title:'English vocabulary roz build karo',text:'Roz 10 new words, 1 RC passage. Norman Lewis ki "Word Power Made Easy" book must-read hai SSC CGL ke liye.',tag:'30 min daily vocab'},
+      {icon:'⚡',title:'GK sirf smart tarike se padho',text:'Poora GK padna impossible hai. Sirf: Last 6 months CA, Lucent GK (once), Previous year GK questions. Static GK mein zyada time waste mat karo.',tag:'Selective study'},
+      {icon:'🔄',title:'Previous year papers — sabse important',text:'Last 5 saal ke papers solve karo time-bound. Yahi sabse effective preparation hai. Error analysis karo — galat questions ko dobaara padho.',tag:'5 papers minimum'},
+    ],
+    pyqs:[
+      {year:'2024',name:'SSC CGL Tier I — Shift 1',meta:'100 Qs · Sep 2024 · All sections',link:'#'},
+      {year:'2024',name:'SSC CGL Tier I — Shift 2',meta:'100 Qs · Sep 2024 · All sections',link:'#'},
+      {year:'2023',name:'SSC CGL Tier I — Complete Paper',meta:'100 Qs · Jul 2023',link:'#'},
+      {year:'2023',name:'SSC CGL Tier II — Paper I (Maths)',meta:'90 Qs · Oct 2023',link:'#'},
+      {year:'2022',name:'SSC CGL Tier I Paper',meta:'100 Qs · Dec 2022',link:'#'},
+      {year:'2021',name:'SSC CGL Tier I Paper',meta:'100 Qs · Aug 2021',link:'#'},
+    ],
+    cutoffs:[
+      {year:'2024',gen:'140.5',obc:'135.2',sc:'125.8'},
+      {year:'2023',gen:'137.8',obc:'132.5',sc:'122.1'},
+      {year:'2022',gen:'135.2',obc:'130.0',sc:'119.5'},
+      {year:'2021',gen:'130.0',obc:'125.5',sc:'115.0'},
+    ],
+    ytChannels:[
+      {init:'SS',name:'SSC Adda247',subs:'5.2M subscribers',tags:['SSC CGL','CHSL','Free']},
+      {init:'PW',name:'Physics Wallah (Alakh Sir)',subs:'17M subscribers',tags:['Math','Reasoning','Free']},
+      {init:'WT',name:'Wifistudy',subs:'8.3M subscribers',tags:['GK','Current Affairs','Free']},
+      {init:'GR',name:'Gagan Pratap Maths',subs:'3.1M subscribers',tags:['Math Only','CGL Expert','Free']},
+      {init:'KD',name:'KD Campus',subs:'2.8M subscribers',tags:['English','Vocab','Free']},
+    ]
+  },
+  chsl:{
+    name:'SSC CHSL 2024-25',icon:'📄',iconClass:'ei-ssc',type:'SSC',
+    sub:'Combined Higher Secondary Level Examination',
+    badges:[{t:'LDC/JSA/PA/SA Posts',c:'hb-blue'},{t:'10+2 Required',c:'hb-green'},{t:'2 Tiers',c:'hb-amber'}],
+    overview:[
+      {label:'Total Vacancies',val:'3,712',sub:'2024 cycle'},
+      {label:'Application Fee',val:'₹100',sub:'Gen/OBC | SC/ST free'},
+      {label:'Age Limit',val:'18–27',sub:'Years'},
+      {label:'Exam Mode',val:'CBT',sub:'Computer Based'},
+      {label:'Negative Mark',val:'-0.50',sub:'Per wrong answer'},
+      {label:'Total Marks',val:'400',sub:'Tier I + II'},
+    ],
+    sections:[
+      {subj:'General Intelligence',qs:25,marks:50,time:'—',imp:80},
+      {subj:'General Awareness',qs:25,marks:50,time:'—',imp:85},
+      {subj:'Quantitative Aptitude',qs:25,marks:50,time:'—',imp:90},
+      {subj:'English Language',qs:25,marks:50,time:'—',imp:85},
+    ],
+    totalQs:100,totalMarks:200,totalTime:'60 min',
+    syllabus:{
+      'Quantitative Aptitude':[
+        {t:'Percentage & Profit/Loss',w:'high'},{t:'Ratio & Proportion',w:'high'},
+        {t:'Time & Work',w:'med'},{t:'Simple & Compound Interest',w:'med'},
+        {t:'Number System',w:'med'},{t:'Basic Algebra',w:'low'},
+      ],
+      'General Awareness':[
+        {t:'Current Affairs (3 months)',w:'high'},{t:'Static GK',w:'high'},
+        {t:'Indian History',w:'med'},{t:'Geography',w:'med'},
+        {t:'Science Basics',w:'med'},{t:'Sports & Awards',w:'low'},
+      ],
+      'Reasoning':[
+        {t:'Analogy',w:'high'},{t:'Classification',w:'high'},
+        {t:'Series',w:'high'},{t:'Coding-Decoding',w:'med'},
+        {t:'Direction & Distance',w:'med'},{t:'Venn Diagram',w:'low'},
+      ],
+      'English':[
+        {t:'Error Spotting',w:'high'},{t:'Fill in Blanks',w:'high'},
+        {t:'Synonyms/Antonyms',w:'med'},{t:'Cloze Test',w:'med'},
+        {t:'One Word Substitution',w:'med'},{t:'Spelling',w:'low'},
+      ]
+    },
+    strategy:[
+      {icon:'✅',title:'CHSL CGL se aasaan hai — smart karo',text:'CHSL ka level 10+2 ka hai. CGL waale prepare kar rahe ho toh CHSL easy lagega. 120+ marks target rakho Tier I mein.',tag:'Easier than CGL'},
+      {icon:'📐',title:'Math basic rakho — advanced nahi',text:'CHSL mein Class 10 level Maths aata hai. Percentage, Ratio, SI/CI — yeh 3 topics master karo. Complex formulas ki zaroorat nahi.',tag:'Class 10 level only'},
+      {icon:'📖',title:'English grammar strong banao',text:'Error spotting aur fill in blanks mein grammar rules se questions aate hain. Basic tenses, subject-verb agreement — yeh zyada important hain vocabulary se.',tag:'Grammar > Vocab'},
+      {icon:'⚡',title:'Typing test ki practice shuru karo',text:'Tier II mein typing test hota hai — English 35 WPM, Hindi 30 WPM. Yeh daily practice maangta hai. Neglect mat karo!',tag:'Typing mandatory'},
+    ],
+    pyqs:[
+      {year:'2024',name:'SSC CHSL Tier I — Mar 2024',meta:'100 Qs · All shifts',link:'#'},
+      {year:'2023',name:'SSC CHSL Tier I — Aug 2023',meta:'100 Qs · Complete',link:'#'},
+      {year:'2022',name:'SSC CHSL Tier I Paper',meta:'100 Qs · May 2022',link:'#'},
+      {year:'2021',name:'SSC CHSL Tier I Paper',meta:'100 Qs · Apr 2021',link:'#'},
+    ],
+    cutoffs:[
+      {year:'2024',gen:'132.0',obc:'128.5',sc:'119.0'},
+      {year:'2023',gen:'129.5',obc:'125.0',sc:'116.5'},
+      {year:'2022',gen:'125.0',obc:'120.5',sc:'112.0'},
+    ],
+    ytChannels:[
+      {init:'SS',name:'SSC Adda247',subs:'5.2M subscribers',tags:['SSC CHSL','Free']},
+      {init:'PW',name:'Physics Wallah',subs:'17M subscribers',tags:['Math','Hindi Medium']},
+      {init:'WT',name:'Wifistudy',subs:'8.3M subscribers',tags:['GK','English']},
+      {init:'ND',name:'Neetu Singh English',subs:'1.2M subscribers',tags:['English Only','Free']},
+    ]
+  },
+  cds:{
+    name:'CDS I & II 2024-25',icon:'⚔️',iconClass:'ei-def',type:'Defence',
+    sub:'Combined Defence Services Examination — UPSC',
+    badges:[{t:'Officer Level Posts',c:'hb-blue'},{t:'Graduation Required',c:'hb-green'},{t:'SSB Interview',c:'hb-amber'}],
+    overview:[
+      {label:'Conducting Body',val:'UPSC',sub:'Twice yearly (I & II)'},
+      {label:'Application Fee',val:'₹200',sub:'Women/SC/ST free'},
+      {label:'Age Limit',val:'19–25',sub:'Years (varies by post)'},
+      {label:'Negative Mark',val:'-0.33',sub:'Per wrong answer'},
+      {label:'Total Marks',val:'300',sub:'Written (IMA/INA/AFA)'},
+      {label:'SSB Interview',val:'900',sub:'Marks (personality test)'},
+    ],
+    sections:[
+      {subj:'English',qs:120,marks:100,time:'2 hrs',imp:90},
+      {subj:'General Knowledge',qs:120,marks:100,time:'2 hrs',imp:85},
+      {subj:'Elementary Mathematics',qs:100,marks:100,time:'2 hrs',imp:95},
+    ],
+    totalQs:340,totalMarks:300,totalTime:'6 hrs total',
+    syllabus:{
+      'Elementary Mathematics':[
+        {t:'Algebra',w:'high'},{t:'Trigonometry',w:'high'},
+        {t:'Geometry',w:'high'},{t:'Arithmetic',w:'high'},
+        {t:'Statistics',w:'med'},{t:'Mensuration',w:'med'},
+        {t:'Number System',w:'med'},{t:'Set Theory',w:'low'},
+      ],
+      'General Knowledge':[
+        {t:'Indian History & Culture',w:'high'},{t:'Defence & Military GK',w:'high'},
+        {t:'Current Affairs',w:'high'},{t:'Indian Polity',w:'med'},
+        {t:'Geography',w:'med'},{t:'Science & Tech',w:'med'},
+        {t:'Economy',w:'low'},{t:'Sports',w:'low'},
+      ],
+      'English':[
+        {t:'Reading Comprehension',w:'high'},{t:'Fill in Blanks',w:'high'},
+        {t:'Ordering of Sentences',w:'med'},{t:'Spotting Errors',w:'med'},
+        {t:'Vocabulary',w:'high'},{t:'Antonyms/Synonyms',w:'med'},
+      ],
+      'SSB Interview':[
+        {t:'Officers Intelligence Rating',w:'high'},{t:'Psychological Tests',w:'high'},
+        {t:'Group Testing Officer Tasks',w:'high'},{t:'Personal Interview',w:'high'},
+        {t:'Command Task',w:'med'},{t:'Conference',w:'med'},
+      ]
+    },
+    strategy:[
+      {icon:'⚔️',title:'CDS = Written + SSB dono qualify karne hain',text:'Written mein sirf shortlist hoge — real selection SSB mein hoti hai. Written mein 40-50% marks kaafi hain shortlist ke liye. SSB ko seriously lo.',tag:'SSB is the real game'},
+      {icon:'📐',title:'Math Class 11-12 level ka hai',text:'NCERT Class 11-12 Maths pehle complete karo. Algebra aur Trigonometry combined 40% weightage rakhte hain. Shortcuts kaam nahi karenge — concepts strong banao.',tag:'NCERT first'},
+      {icon:'🌍',title:'Defence GK zyada important hai',text:'General GK ke saath Defence specific GK bhi zaroori hai — Indian Army history, ranks, operations, current defence news. Yeh CDS-specific hai.',tag:'Defence GK unique'},
+      {icon:'📖',title:'English newspaper roz padho',text:'CDS English tough hai. The Hindu ya Indian Express roz padho — RC passages aur vocabulary dono improve honge. 30-45 min daily.',tag:'The Hindu daily'},
+      {icon:'🏃',title:'Physical fitness parallel maintain karo',text:'SSB mein physical tasks hote hain. Written prepare karte karte daily running, push-ups karte raho. SSB ke waqt fitness alag se nahi bana sakte.',tag:'Fitness from day 1'},
+    ],
+    pyqs:[
+      {year:'2024',name:'CDS II 2024 — All Papers',meta:'English + GK + Math',link:'#'},
+      {year:'2024',name:'CDS I 2024 — All Papers',meta:'English + GK + Math',link:'#'},
+      {year:'2023',name:'CDS II 2023 — Complete',meta:'English + GK + Math',link:'#'},
+      {year:'2023',name:'CDS I 2023 — Complete',meta:'English + GK + Math',link:'#'},
+      {year:'2022',name:'CDS II 2022 Paper',meta:'All 3 papers',link:'#'},
+    ],
+    cutoffs:[
+      {year:'2024',gen:'88',obc:'82',sc:'75'},
+      {year:'2023',gen:'85',obc:'79',sc:'72'},
+      {year:'2022',gen:'82',obc:'76',sc:'70'},
+    ],
+    ytChannels:[
+      {init:'MJ',name:'Major Kalshi Classes',subs:'2.1M subscribers',tags:['CDS','NDA','Defence']},
+      {init:'CC',name:'Centurion Defence Academy',subs:'890K subscribers',tags:['CDS','SSB','Free']},
+      {init:'DD',name:'Defence Adda247',subs:'1.5M subscribers',tags:['CDS','NDA','AFCAT']},
+      {init:'SS',name:'SSBCrack',subs:'1.3M subscribers',tags:['SSB Interview','GTO','Free']},
+    ]
+  },
+  mts:{
+    name:'SSC MTS 2024-25',icon:'📝',iconClass:'ei-ssc',type:'SSC',
+    sub:'Multi Tasking Staff & Havaldar Examination',
+    badges:[{t:'Group C Posts',c:'hb-blue'},{t:'10th Pass Required',c:'hb-green'},{t:'2 Tiers',c:'hb-amber'}],
+    overview:[
+      {label:'Total Vacancies',val:'9,583',sub:'2024 cycle'},
+      {label:'Application Fee',val:'₹0',sub:'All categories free'},
+      {label:'Age Limit',val:'18–25',sub:'Years'},
+      {label:'Exam Mode',val:'CBT',sub:'Computer Based'},
+      {label:'Negative Mark',val:'No',sub:'Tier I has no negative'},
+      {label:'Total Marks',val:'150',sub:'Tier I + II'},
+    ],
+    sections:[
+      {subj:'Numerical & Mathematical Ability',qs:20,marks:60,time:'—',imp:85},
+      {subj:'Reasoning Ability & Problem Solving',qs:20,marks:60,time:'—',imp:80},
+      {subj:'General Awareness',qs:25,marks:75,time:'—',imp:90},
+      {subj:'English Language & Comprehension',qs:25,marks:75,time:'—',imp:75},
+    ],
+    totalQs:90,totalMarks:270,totalTime:'90 min',
+    syllabus:{
+      'Math & Numerical':[
+        {t:'Number System',w:'high'},{t:'Percentage',w:'high'},
+        {t:'Basic Arithmetic',w:'high'},{t:'Simple Interest',w:'med'},
+        {t:'Fractions & Decimals',w:'med'},{t:'Time & Work',w:'low'},
+      ],
+      'General Awareness':[
+        {t:'Current Affairs',w:'high'},{t:'Indian History',w:'high'},
+        {t:'Basic Science',w:'med'},{t:'Geography',w:'med'},
+        {t:'Indian Constitution',w:'med'},{t:'Sports',w:'low'},
+      ],
+      'Reasoning':[
+        {t:'Analogy',w:'high'},{t:'Series',w:'high'},
+        {t:'Classification',w:'high'},{t:'Mirror Images',w:'med'},
+        {t:'Paper Folding',w:'med'},{t:'Embedded Figures',w:'low'},
+      ],
+      'English':[
+        {t:'Basic Grammar',w:'high'},{t:'Vocabulary',w:'high'},
+        {t:'Sentence Correction',w:'med'},{t:'Reading Comp',w:'med'},
+      ]
+    },
+    strategy:[
+      {icon:'✅',title:'Sabse aasaan SSC exam — 10th level',text:'MTS Class 10 level ka exam hai. Agar tum 10th maths mein acche the toh bahut kam mehnat lagegi. 3-4 months ki preparation kaafi hai.',tag:'3 months enough'},
+      {icon:'🎯',title:'GK pe zyada focus karo',text:'MTS mein GK sabse zyada marks deta hai. Lucent GK aur last 6 months current affairs padho. Yahi sabse zyada score karaata hai.',tag:'GK = max marks'},
+      {icon:'⚡',title:'Tier I mein no negative marking',text:'Tier I mein negative marking nahi hai! Toh har question ka jawab do — even guess karo. Koi question blank mat chhodo.',tag:'Attempt all'},
+    ],
+    pyqs:[
+      {year:'2024',name:'SSC MTS Tier I — 2024',meta:'90 Qs · Sep-Oct 2024',link:'#'},
+      {year:'2023',name:'SSC MTS Tier I — 2023',meta:'90 Qs · May 2023',link:'#'},
+      {year:'2021',name:'SSC MTS Paper — 2021',meta:'100 Qs · Oct 2021',link:'#'},
+    ],
+    cutoffs:[
+      {year:'2024',gen:'105',obc:'100',sc:'92'},
+      {year:'2023',gen:'100',obc:'95',sc:'88'},
+    ],
+    ytChannels:[
+      {init:'SS',name:'SSC Adda247',subs:'5.2M',tags:['MTS','Free','Hindi']},
+      {init:'PW',name:'Physics Wallah',subs:'17M',tags:['Math','Reasoning']},
+      {init:'WT',name:'Wifistudy',subs:'8.3M',tags:['GK','Free']},
+    ]
+  },
+  gd:{
+    name:'SSC GD Constable 2024-25',icon:'🛡️',iconClass:'ei-ssc',type:'SSC',
+    sub:'General Duty Constable — CAPF / NIA / SSF / AR',
+    badges:[{t:'Constable Posts',c:'hb-blue'},{t:'10th Pass',c:'hb-green'},{t:'Physical Test',c:'hb-amber'}],
+    overview:[
+      {label:'Total Vacancies',val:'39,481',sub:'Largest SSC exam'},
+      {label:'Application Fee',val:'₹100',sub:'Women/SC/ST free'},
+      {label:'Age Limit',val:'18–23',sub:'Years'},
+      {label:'Physical Test',val:'Required',sub:'After written'},
+      {label:'Negative Mark',val:'-0.25',sub:'Per wrong answer'},
+      {label:'Total Marks',val:'160',sub:'Written exam'},
+    ],
+    sections:[
+      {subj:'General Intelligence & Reasoning',qs:20,marks:40,time:'—',imp:80},
+      {subj:'General Knowledge & Awareness',qs:20,marks:40,time:'—',imp:90},
+      {subj:'Elementary Mathematics',qs:20,marks:40,time:'—',imp:85},
+      {subj:'English / Hindi',qs:20,marks:40,time:'—',imp:75},
+    ],
+    totalQs:80,totalMarks:160,totalTime:'60 min',
+    syllabus:{
+      'Mathematics':[
+        {t:'Number System',w:'high'},{t:'Percentage',w:'high'},
+        {t:'Ratio & Proportion',w:'med'},{t:'Time & Work',w:'med'},
+        {t:'Profit & Loss',w:'high'},{t:'Mensuration',w:'low'},
+      ],
+      'General Awareness':[
+        {t:'Current Affairs',w:'high'},{t:'Indian History',w:'high'},
+        {t:'Sports & Awards',w:'med'},{t:'Geography',w:'med'},
+        {t:'Science',w:'med'},{t:'Constitution',w:'low'},
+      ],
+      'Reasoning':[
+        {t:'Analogy',w:'high'},{t:'Classification',w:'high'},
+        {t:'Series',w:'med'},{t:'Non-Verbal Reasoning',w:'med'},
+      ],
+      'English/Hindi':[
+        {t:'Grammar Basics',w:'high'},{t:'Comprehension',w:'med'},
+        {t:'Vocabulary',w:'med'},{t:'Fill Blanks',w:'high'},
+      ]
+    },
+    strategy:[
+      {icon:'🏃',title:'Physical Test sabse pehle dekho',text:'Written clear karne ke baad Physical Efficiency Test (PET) aur Physical Standard Test (PST) hote hain. Running (5km / 1.6km), height, chest — pehle se prepare karo.',tag:'Physical = mandatory'},
+      {icon:'🎯',title:'Cutoff low hai — accuracy matter karti hai',text:'GD cutoff relatively low hota hai. 100+ marks target rakho. Negative marking hai (-0.25) toh sirf confident questions attempt karo.',tag:'Quality over quantity'},
+      {icon:'📚',title:'GK aur Reasoning pe focus karo',text:'In dono sections mein 80-90% accuracy possible hai proper preparation se. Yahi score differentiate karega.',tag:'GK + Reasoning = key'},
+    ],
+    pyqs:[
+      {year:'2024',name:'SSC GD 2024 — All Shifts',meta:'80 Qs · Feb-Mar 2024',link:'#'},
+      {year:'2022',name:'SSC GD 2022 Paper',meta:'80 Qs · Jan 2023',link:'#'},
+      {year:'2021',name:'SSC GD 2021 Paper',meta:'80 Qs · Nov 2021',link:'#'},
+    ],
+    cutoffs:[
+      {year:'2024',gen:'98',obc:'93',sc:'86'},
+      {year:'2022',gen:'95',obc:'90',sc:'83'},
+    ],
+    ytChannels:[
+      {init:'SS',name:'SSC Adda247',subs:'5.2M',tags:['GD','Free']},
+      {init:'YT',name:'Yojana IAS / GD Special',subs:'750K',tags:['GD Focus','Hindi']},
+      {init:'PW',name:'Physics Wallah',subs:'17M',tags:['Math','GK']},
+    ]
+  },
+  nda:{
+    name:'NDA & NA 2024-25',icon:'🎖️',iconClass:'ei-def',type:'Defence',
+    sub:'National Defence Academy & Naval Academy Examination — UPSC',
+    badges:[{t:'12th Pass',c:'hb-blue'},{t:'Age: 16.5–19.5 yrs',c:'hb-green'},{t:'SSB Interview',c:'hb-amber'}],
+    overview:[
+      {label:'Conducting Body',val:'UPSC',sub:'Twice yearly'},
+      {label:'Vacancies',val:'400+',sub:'Army/Navy/Air Force'},
+      {label:'Application Fee',val:'₹100',sub:'SC/ST/Women free'},
+      {label:'Eligibility',val:'12th',sub:'PCM for Air Force/Navy'},
+      {label:'Negative Mark',val:'-0.83',sub:'Per wrong answer (Math)'},
+      {label:'SSB Marks',val:'900',sub:'After written shortlist'},
+    ],
+    sections:[
+      {subj:'Mathematics',qs:120,marks:300,time:'2.5 hrs',imp:95},
+      {subj:'General Ability Test',qs:150,marks:600,time:'2.5 hrs',imp:90},
+    ],
+    totalQs:270,totalMarks:900,totalTime:'5 hrs',
+    syllabus:{
+      'Mathematics':[
+        {t:'Algebra',w:'high'},{t:'Trigonometry',w:'high'},
+        {t:'Calculus (Diff + Integral)',w:'high'},{t:'Matrices & Determinants',w:'high'},
+        {t:'Vector Algebra',w:'med'},{t:'Statistics & Probability',w:'med'},
+        {t:'Sets, Relations, Functions',w:'med'},{t:'2D & 3D Geometry',w:'high'},
+      ],
+      'General Ability':[
+        {t:'English (200 marks)',w:'high'},{t:'Physics',w:'high'},
+        {t:'Chemistry',w:'med'},{t:'General Science',w:'med'},
+        {t:'History & Freedom Movement',w:'high'},{t:'Geography',w:'med'},
+        {t:'Current Events',w:'high'},{t:'Polity',w:'low'},
+      ],
+      'English (Part A)':[
+        {t:'Grammar & Usage',w:'high'},{t:'Vocabulary',w:'high'},
+        {t:'Comprehension',w:'high'},{t:'Mental Ability',w:'med'},
+      ],
+      'SSB Preparation':[
+        {t:'Thematic Apperception Test',w:'high'},{t:'Word Association Test',w:'high'},
+        {t:'Situation Reaction Test',w:'high'},{t:'Group Discussion',w:'high'},
+        {t:'Command Task',w:'med'},{t:'Lecturette',w:'med'},
+      ]
+    },
+    strategy:[
+      {icon:'🎓',title:'NDA Math Class 12 PCM level ka hai',text:'NCERT Class 11-12 Math + Physics + Chemistry pehle complete karo. NDA ka math tough hai — Calculus, Vectors, 3D Geometry sab aata hai.',tag:'NCERT is the bible'},
+      {icon:'📐',title:'Math mein negative marking harsh hai',text:'Math mein -0.83 negative marking hai! Yani 3 galat = 1 sahi waste. Sirf 60-65% questions attempt karo confidently. Guessing dangerous hai.',tag:'Attempt selectively'},
+      {icon:'🌍',title:'GAT mein GK + Science + English',text:'GAT 600 marks ka hai — yahan zyada marks milte hain. English, Physics, History pe focus karo. Yahi sections consistent aate hain.',tag:'GAT = 66% marks'},
+      {icon:'🏃',title:'Age jaldi khatam hoti hai — ab shuru karo',text:'NDA ke liye 12th mein hi apply kar sakte ho. 16.5 se 19.5 saal ka window bahut chhota hai. Agar eligible ho toh delay mat karo.',tag:'Time is critical'},
+    ],
+    pyqs:[
+      {year:'2024',name:'NDA II 2024 — Math + GAT',meta:'270 Qs · Sep 2024',link:'#'},
+      {year:'2024',name:'NDA I 2024 — Math + GAT',meta:'270 Qs · Apr 2024',link:'#'},
+      {year:'2023',name:'NDA II 2023 Complete',meta:'270 Qs',link:'#'},
+      {year:'2023',name:'NDA I 2023 Complete',meta:'270 Qs',link:'#'},
+    ],
+    cutoffs:[
+      {year:'2024',gen:'360',obc:'350',sc:'330'},
+      {year:'2023',gen:'345',obc:'335',sc:'318'},
+      {year:'2022',gen:'360',obc:'349',sc:'322'},
+    ],
+    ytChannels:[
+      {init:'MJ',name:'Major Kalshi Classes',subs:'2.1M',tags:['NDA','CDS','Defence']},
+      {init:'CC',name:'Centurion Defence',subs:'890K',tags:['NDA Expert','Free']},
+      {init:'DD',name:'Defence Adda247',subs:'1.5M',tags:['NDA','AFCAT']},
+      {init:'PW',name:'Physics Wallah',subs:'17M',tags:['NDA Math','PCM','Free']},
+    ]
+  },
+  afcat:{
+    name:'AFCAT 2024-25',icon:'✈️',iconClass:'ei-def',type:'Defence',
+    sub:'Air Force Common Admission Test — Indian Air Force',
+    badges:[{t:'Flying & Ground Duty',c:'hb-blue'},{t:'Graduation Required',c:'hb-green'},{t:'AFSB Interview',c:'hb-amber'}],
+    overview:[
+      {label:'Conducting Body',val:'IAF',sub:'Twice yearly'},
+      {label:'Application Fee',val:'₹250',sub:'All categories'},
+      {label:'Age Limit',val:'20–26',sub:'Years (Flying Branch)'},
+      {label:'Negative Mark',val:'-1',sub:'Per wrong answer'},
+      {label:'EKT',val:'Required',sub:'For Technical Branch'},
+      {label:'AFSB',val:'Required',sub:'After written'},
+    ],
+    sections:[
+      {subj:'General Awareness',qs:25,marks:75,time:'—',imp:90},
+      {subj:'Verbal Ability in English',qs:30,marks:90,time:'—',imp:90},
+      {subj:'Numerical Ability',qs:15,marks:45,time:'—',imp:80},
+      {subj:'Reasoning & Military Aptitude',qs:30,marks:90,time:'—',imp:95},
+    ],
+    totalQs:100,totalMarks:300,totalTime:'120 min',
+    syllabus:{
+      'Reasoning & Military Aptitude':[
+        {t:'Verbal Skills',w:'high'},{t:'Spatial Ability',w:'high'},
+        {t:'Rotational Ability',w:'high'},{t:'Hidden Figures',w:'med'},
+        {t:'Embedded Figures',w:'med'},{t:'Sequencing',w:'med'},
+      ],
+      'General Awareness':[
+        {t:'Indian Air Force History',w:'high'},{t:'Defence Current Affairs',w:'high'},
+        {t:'Indian History',w:'med'},{t:'Geography',w:'med'},
+        {t:'Science & Technology',w:'high'},{t:'Sports',w:'low'},
+      ],
+      'Verbal Ability':[
+        {t:'Reading Comprehension',w:'high'},{t:'Error Detection',w:'high'},
+        {t:'Fill in Blanks',w:'high'},{t:'Vocabulary',w:'med'},
+        {t:'Antonyms/Synonyms',w:'med'},{t:'Ordering',w:'med'},
+      ],
+      'Numerical Ability':[
+        {t:'Percentage & Ratio',w:'high'},{t:'Profit & Loss',w:'high'},
+        {t:'Time & Work',w:'med'},{t:'Number System',w:'med'},
+        {t:'SI/CI',w:'med'},{t:'Speed & Distance',w:'low'},
+      ]
+    },
+    strategy:[
+      {icon:'✈️',title:'Reasoning aur English sabse important',text:'AFCAT mein Reasoning + English combined 180 marks ka hai — total ka 60%! In dono pe sabse zyada time do. Spatial reasoning practice karo specially.',tag:'60% marks here'},
+      {icon:'🛫',title:'Military GK AFCAT ke liye specific hai',text:'Indian Air Force ki history, aircraft names, air bases, IAF operations — yeh sab specifically AFCAT mein aata hai. Normal GK books mein yeh nahi milega.',tag:'IAF-specific GK'},
+      {icon:'⚠️',title:'-1 negative marking — be careful',text:'AFCAT mein -1 mark per wrong answer hai. Sirf 70% questions attempt karo jinmein confident ho. Guessing bahut costly hai yahan.',tag:'Attempt 70% only'},
+      {icon:'🧮',title:'Math easy hai — miss mat karo',text:'AFCAT ka Math easy hai — Class 10 level. Yahan 90%+ accuracy possible hai. Yeh easy marks mat chhodo.',tag:'Easy 45 marks'},
+    ],
+    pyqs:[
+      {year:'2024',name:'AFCAT II 2024',meta:'100 Qs · Aug 2024',link:'#'},
+      {year:'2024',name:'AFCAT I 2024',meta:'100 Qs · Feb 2024',link:'#'},
+      {year:'2023',name:'AFCAT II 2023',meta:'100 Qs · Aug 2023',link:'#'},
+      {year:'2023',name:'AFCAT I 2023',meta:'100 Qs · Feb 2023',link:'#'},
+    ],
+    cutoffs:[
+      {year:'2024',gen:'152',obc:'148',sc:'140'},
+      {year:'2023',gen:'150',obc:'145',sc:'138'},
+    ],
+    ytChannels:[
+      {init:'DD',name:'Defence Adda247',subs:'1.5M',tags:['AFCAT','Free']},
+      {init:'MJ',name:'Major Kalshi Classes',subs:'2.1M',tags:['AFCAT','CDS']},
+      {init:'AF',name:'Air Force Wale',subs:'420K',tags:['AFCAT Only','Free']},
+    ]
+  }
+};
+
+let currentExam='cgl';
+
+function loadExam(key,tabEl){
+  document.querySelectorAll('.exam-tab').forEach(t=>t.classList.remove('active'));
+  if(tabEl) tabEl.classList.add('active');
+  currentExam=key;
+  const d=EXAMS[key];
+  const cols=d.sections.length>3?'grid-template-columns:1fr 1fr 1fr 1fr':'grid-template-columns:1fr 1fr 1fr 1fr';
+  document.getElementById('examMain').innerHTML=`
+    <div class="exam-header">
+      <div>
+        <div class="exam-title-row">
+          <div class="exam-icon-big ${d.iconClass}">${d.icon}</div>
+          <div>
+            <h1>${d.name}</h1>
+            <p>${d.sub}</p>
+          </div>
+        </div>
+      </div>
+      <div class="header-badges">${d.badges.map(b=>`<span class="hbadge ${b.c}">${b.t}</span>`).join('')}</div>
+    </div>
+    <div class="info-tabs">
+      <div class="info-tab active" onclick="switchInfo('overview',this)">📊 Overview</div>
+      <div class="info-tab" onclick="switchInfo('pattern',this)">📋 Exam Pattern</div>
+      <div class="info-tab" onclick="switchInfo('syllabus',this)">📚 Syllabus</div>
+      <div class="info-tab" onclick="switchInfo('strategy',this)">🎯 Strategy</div>
+      <div class="info-tab" onclick="switchInfo('pyq',this)">📝 PYQs</div>
+      <div class="info-tab" onclick="switchInfo('cutoff',this)">📈 Cutoffs</div>
+      <div class="info-tab" onclick="switchInfo('youtube',this)">▶ YouTube</div>
+    </div>
+    <!-- OVERVIEW -->
+    <div class="tab-pane active" id="info-overview">
+      <div class="overview-grid">${d.overview.map(o=>`<div class="ov-card"><h4>${o.label}</h4><div class="ov-val">${o.val}</div><div class="ov-sub">${o.sub}</div></div>`).join('')}</div>
+      <div class="section-table">
+        <div class="st-header" style="grid-template-columns:2fr 1fr 1fr 1fr 140px">
+          <span>Subject</span><span>Questions</span><span>Marks</span><span>Time</span><span>Importance</span>
+        </div>
+        ${d.sections.map(s=>`<div class="st-row" style="grid-template-columns:2fr 1fr 1fr 1fr 140px">
+          <span class="subj">${s.subj}</span>
+          <span class="qs">${s.qs}</span>
+          <span class="marks">${s.marks}</span>
+          <span class="time">${s.time}</span>
+          <div class="importance-bar"><div class="ib-fill" style="width:${s.imp}%"></div></div>
+        </div>`).join('')}
+        <div class="st-row" style="grid-template-columns:2fr 1fr 1fr 1fr 140px;background:#F8FAFC;font-weight:700">
+          <span style="font-weight:700;color:#0F172A">Total</span>
+          <span class="qs" style="font-weight:700;color:#0F172A">${d.totalQs}</span>
+          <span class="marks">${d.totalMarks}</span>
+          <span class="time">${d.totalTime}</span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+    <!-- PATTERN -->
+    <div class="tab-pane" id="info-pattern">
+      <div class="section-table">
+        <div class="st-header" style="grid-template-columns:2fr 1fr 1fr 1fr 140px">
+          <span>Subject</span><span>Questions</span><span>Marks</span><span>Time</span><span>Importance</span>
+        </div>
+        ${d.sections.map(s=>`<div class="st-row" style="grid-template-columns:2fr 1fr 1fr 1fr 140px">
+          <span class="subj">${s.subj}</span>
+          <span class="qs">${s.qs}</span>
+          <span class="marks">${s.marks}</span>
+          <span class="time">${s.time}</span>
+          <div class="importance-bar"><div class="ib-fill" style="width:${s.imp}%"></div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <!-- SYLLABUS -->
+    <div class="tab-pane" id="info-syllabus">
+      <div class="syllabus-grid">${Object.entries(d.syllabus).map(([sec,topics])=>`
+        <div class="syl-card">
+          <h3>📌 ${sec}</h3>
+          ${topics.map(t=>`<div class="topic-item"><span class="ti-name">${t.t}</span><span class="ti-weight tw-${t.w}">${t.w==='high'?'High':t.w==='med'?'Medium':'Low'}</span></div>`).join('')}
+        </div>`).join('')}</div>
+    </div>
+    <!-- STRATEGY -->
+    <div class="tab-pane" id="info-strategy">
+      <div class="strategy-list">${d.strategy.map(s=>`
+        <div class="strat-item">
+          <div class="strat-icon">${s.icon}</div>
+          <div class="strat-body">
+            <h4>${s.title}</h4>
+            <p>${s.text}</p>
+            <span class="tag">${s.tag}</span>
+          </div>
+        </div>`).join('')}</div>
+    </div>
+    <!-- PYQ -->
+    <div class="tab-pane" id="info-pyq">
+      <div class="pyq-list">${d.pyqs.map(p=>`
+        <div class="pyq-row" onclick="openPyq('${p.name}')">
+          <div class="pyq-year">${p.year}</div>
+          <div class="pyq-info"><div class="pyq-name">${p.name}</div><div class="pyq-meta">${p.meta}</div></div>
+          <button class="pyq-btn">Analyze →</button>
+        </div>`).join('')}</div>
+    </div>
+    <!-- CUTOFF -->
+    <div class="tab-pane" id="info-cutoff">
+      <div class="cutoff-table">
+        <div class="ct-head"><span>Year</span><span>General</span><span>OBC</span><span>SC/ST</span></div>
+        ${d.cutoffs.map(c=>`<div class="ct-row"><span class="year">${c.year}</span><span class="score">${c.gen}</span><span>${c.obc}</span><span>${c.sc}</span></div>`).join('')}
+      </div>
+      <p style="font-size:12px;color:#94A3B8;margin-top:12px">* Cutoffs are approximate Tier I marks. Official SSC/UPSC notifications pe verify karo.</p>
+    </div>
+    <!-- YOUTUBE -->
+    <div class="tab-pane" id="info-youtube">
+      <div class="yt-section">
+        <div class="yt-url-row">
+          <input class="yt-input" id="ytInput" placeholder="YouTube video link paste karo — transcript + summary milega" type="url"/>
+          <button class="yt-btn" onclick="loadYT()">▶ Load</button>
+        </div>
+        <div class="yt-result" id="ytResult">
+          <h3 id="ytTitle"></h3>
+          <p id="ytDesc"></p>
+          <div class="yt-transcript" id="ytTranscript"></div>
+          <div class="yt-actions">
+            <button class="yt-action-btn primary" onclick="sendToMentor()">🤖 Mentor Se Analyze Karao</button>
+            <button class="yt-action-btn" onclick="copyTranscript()">📋 Copy Transcript</button>
+          </div>
+        </div>
+        <div class="yt-channels-label">RECOMMENDED CHANNELS FOR ${d.name.toUpperCase()}</div>
+        <div class="yt-channels">${d.ytChannels.map(c=>`
+          <div class="yt-channel">
+            <div class="yc-avatar">${c.init}</div>
+            <div class="yc-info">
+              <div class="yc-name">${c.name}</div>
+              <div class="yc-sub">${c.subs}</div>
+              <div class="yc-tags">${c.tags.map(t=>`<span class="yc-tag">${t}</span>`).join('')}</div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function switchInfo(tab, el){
+  document.querySelectorAll('.info-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('info-'+tab).classList.add('active');
+}
+
+function openPyq(name){
+  window.location.href=`prepflow_pdfloader.html`;
+}
+
+async function loadYT(){
+  const url=document.getElementById('ytInput').value.trim();
+  if(!url||!url.includes('youtube')){alert('Valid YouTube URL daalo!');return;}
+  const res=document.getElementById('ytResult');
+  res.classList.add('show');
+  const vid=url.match(/(?:v=|youtu\.be\/)([^&\n?#]+)/)?.[1]||'unknown';
+  document.getElementById('ytTitle').textContent='Video load ho raha hai...';
+  document.getElementById('ytDesc').textContent='YouTube video ka summary AI se generate ho raha hai...';
+  document.getElementById('ytTranscript').textContent='';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        system:`Tu PrepFlow ka AI mentor hai. User ne ek YouTube video URL share kiya hai. URL se video ID extract karo aur ek helpful study summary banao. Hinglish mein bolna. Format: Title guess karo, Key topics list karo, Study tips do.`,
+        messages:[{role:'user',content:`Is YouTube video ke baare mein study summary banao: ${url}\n\nVideo ID: ${vid}\nExam context: ${EXAMS[currentExam].name}\n\nKey topics aur study tips do jo is exam ke liye relevant ho.`}]
+      })
+    });
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'Video summary generate nahi ho payi.';
+    document.getElementById('ytTitle').textContent=`YouTube Video — ${EXAMS[currentExam].name} Relevant`;
+    document.getElementById('ytDesc').textContent='AI ne is video ka study summary banaya hai:';
+    document.getElementById('ytTranscript').textContent=text;
+  }catch(e){
+    document.getElementById('ytTitle').textContent='YouTube Video Summary';
+    document.getElementById('ytDesc').textContent='AI analysis:';
+    document.getElementById('ytTranscript').textContent=`${EXAMS[currentExam].name} ke liye yeh video helpful ho sakta hai.\n\nNote: Full transcript ke liye video ke description mein subtitles ya chapters check karo. PrepFlow mentor se is topic ke baare mein detailed guidance le sakte ho.`;
+  }
+}
+
+function sendToMentor(){
+  const t=document.getElementById('ytTranscript').textContent;
+  localStorage.setItem('pf_context',t.slice(0,500));
+  window.location.href='prepflow_chat.html';
+}
+function copyTranscript(){
+  navigator.clipboard.writeText(document.getElementById('ytTranscript').textContent)
+    .then(()=>alert('Copy ho gaya!'));
+}
+
+// Init
+loadExam('cgl',null);
+</script>
+</body>
+</html>
